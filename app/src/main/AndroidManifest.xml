@@ -20,6 +20,15 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".AddEditWallabyActivity"
+            android:parentActivityName=".MainActivity">
+            <!-- Parent activity metadata to support Android 4.0 and lower -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".AddEditWallabyActivity" />
+        </activity>
+
         <provider
             android:name=".data.WallabyProvider"
             android:authorities="com.babarehner.android.wallaby"
