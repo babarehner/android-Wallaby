@@ -4,6 +4,8 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import static com.babarehner.wallaby.data.WallabyContract.WallabyTableConstants.*;
+
 
 /**
  * Project Name: Wallaby
@@ -37,18 +39,24 @@ public class WallabyDBHelper extends SQLiteOpenHelper {
 
     /**
      * Create the wallaby db, create the schema and empty table.
-     * @param sqLiteDatabase
+     * @param sqLiteDatabase the db
      */
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
-        //TODO finish this method
-        final String SQL_CREATE_WALLABY_TABLE;
+
+        final String SQL_CREATE_WALLABY_TABLE = "CREATE TABLE " +
+                WALLABY_TABLE_NAME + " (" +
+                _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                C_PIC + " TEXT, " +
+                C_DATE + " TIMESTAMP DEFAULT CURRENT_TIMESTAMP );";     //Unix Time in Long ms
+
+        sqLiteDatabase.execSQL(SQL_CREATE_WALLABY_TABLE);
 
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
-        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + WallabyContract.WallabyTableConstants.WALLABY_TABLE_NAME);
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + WALLABY_TABLE_NAME);
         onCreate(sqLiteDatabase);
 
     }

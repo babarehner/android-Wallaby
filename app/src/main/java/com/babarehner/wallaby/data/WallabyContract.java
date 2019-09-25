@@ -53,7 +53,7 @@ public class WallabyContract {
 
         // the globals and the columns
         public static final String _ID = BaseColumns._ID;
-        public static final String _C_PIC = "CPic";
+        public static final String C_PIC = "CPic";
         public static final String C_CARD_NAME = "CCardName";
         public static final String C_DATE = "CDate";
     }
