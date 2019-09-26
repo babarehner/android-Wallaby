@@ -46,7 +46,7 @@ public class WallabyContract {
         static final String WALLABY_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE
                 + "/" + WALLABY_AUTHORITY + "/" + PATH_WALLABY_TABLE_NAME;
         // Content URI to access the table data in the provider
-        public static final Uri WALLABYURI = Uri.withAppendedPath(BASE_CONTENT_URI,
+        public static final Uri WALLABY_URI = Uri.withAppendedPath(BASE_CONTENT_URI,
                 PATH_WALLABY_TABLE_NAME);
 
         static final String WALLABY_TABLE_NAME = "TWallaby";

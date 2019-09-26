@@ -118,7 +118,7 @@ public class WallabyProvider extends ContentProvider {
 
     // Insert a record into the records table with the given content values. Return the new content uri
     // for that specific row in the database
-    public Uri insertRecord(Uri uri, ContentValues values) {
+    private Uri insertRecord(Uri uri, ContentValues values) {
 
         SQLiteDatabase db = mDBHelper.getWritableDatabase();
         long id = db.insert(WALLABY_TABLE_NAME, null, values);

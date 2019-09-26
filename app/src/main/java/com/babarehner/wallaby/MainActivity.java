@@ -1,5 +1,8 @@
 package com.babarehner.wallaby;
 
+import android.content.ContentUris;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -11,6 +14,10 @@ import androidx.appcompat.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import com.babarehner.wallaby.data.WallabyContract;
+
+import static com.babarehner.wallaby.data.WallabyContract.WallabyTableConstants.WALLABY_URI;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -25,8 +32,8 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Intent intent = new Intent( MainActivity.this, AddEditWallabyActivity.class);
+                startActivity(intent);
             }
         });
     }
