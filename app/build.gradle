@@ -18,24 +18,7 @@ android {
         }
     }
 
-    flavorDimensions "tier"
-    productFlavors {
-        free {
-            dimension "tier"
-            applicationId "com.babarehner.wallaby.free"
-            versionName "1.0-free"
-            // this boolean can be accessed in java classes by using BuildConfig class
-            // and now you can identify if your app is the paid version or not
-            buildConfigField "boolean", "PAID_VERSION", "false"
-        }
 
-        paid {
-            dimension "tier"
-            applicationId "com.babarehner.wallaby.paid"
-            versionName "1.0-paid"
-            buildConfigField "boolean", "PAID_VERSION", "true"
-        }
-    }
 }
 
 dependencies {

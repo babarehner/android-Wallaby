@@ -40,11 +40,18 @@
             android:layout_below="@id/edit_card"/>
 
         <ImageView
+            android:id="@+id/imageThmbNail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/button_image"/>
+
+        <ImageView
             android:id="@+id/imageView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
-            android:layout_below="@id/button_image"/>
+            android:layout_below="@id/imageThmbNail"/>
+
 
     </RelativeLayout>
 
