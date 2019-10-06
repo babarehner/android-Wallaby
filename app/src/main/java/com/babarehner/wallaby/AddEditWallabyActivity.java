@@ -1,7 +1,6 @@
 package com.babarehner.wallaby;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -10,7 +9,6 @@ import android.graphics.BitmapFactory;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
@@ -25,18 +23,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentFactory;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.Loader;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
-
-
 
 /**
  * Project Name: Wallaby
@@ -68,7 +64,7 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
 
     private EditText mEditTextCard;
     private Button mTakePictureButton;
-    private ImageView imageView;
+    private ImageView mImageView;
     private ImageView imageThmbNail;
     private Bitmap thmbNailBitmap;
     private byte[] thmbNailBlob;
@@ -89,7 +85,7 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
         Intent intent = getIntent();
         mCurrentWallabyUri = intent.getData();
 
-        imageView = findViewById(R.id.imageView);
+        mImageView = findViewById(R.id.imageView);
         imageThmbNail = findViewById(R.id.imageThmbNail);
 
     }
@@ -164,7 +160,7 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK){
 
-            imageView.setImageURI(mPhotoUri);
+            mImageView.setImageURI(mPhotoUri);
         } else {
             if (resultCode == RESULT_CANCELED){
                 // user cancelled the image capture
@@ -178,13 +174,26 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
     }
 
 
-
+    // Button calls this in resource file
     public void takePicture(View v){
+        Camera  myCamera = new Camera(this, this);
+
         mTakePictureButton = findViewById((R.id.button_image));
+        mImageView = findViewById(R.id.imageView);
+        // checkCameraPermission();
         Log.v("takePictureView ", LOG_TAG);
-        checkCameraPermission();
-        dispatchTakePictureIntent();
+        // dispatchTakePictureIntent();
+        mTakePictureButton = myCamera.checkPermission(mTakePictureButton);
+        mPhotoUri = myCamera.takePicture(mImageView);
+        mImageView.setImageURI(mPhotoUri);
+
+        currentPhotoPath = myCamera.getCurrentPhotoPath();
+        //get the thumbnail image
+        Bitmap thumbImage = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(currentPhotoPath), 50, 50);
+        imageThmbNail.setImageBitmap(thumbImage);
+        //
     }
+
 
 
     public void checkCameraPermission() {
@@ -195,14 +204,18 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
         }
     }
 
+
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == 0) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
-                    && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 mTakePictureButton.setEnabled(true);
+            } else {
+                Toast.makeText(getApplicationContext(), "Camera permission not granted. Unable to take Picture.", Toast.LENGTH_LONG).show();
             }
         }
+    }
 
 
     /*
@@ -232,7 +245,7 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
     Bitmap thumbImage = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(imagePath), THUMBSIZE, THUMBSIZE);
     imageView.setImageBitmap(thumbImage);
      */
-    }
+
 
     /*
     @Override
@@ -248,8 +261,8 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
             }
         }
     }
-     */
 
+    */
 
 
 
