@@ -13,6 +13,7 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -27,7 +28,6 @@ import java.util.Date;
 import static android.app.Activity.RESULT_CANCELED;
 import static android.app.Activity.RESULT_OK;
 import static com.babarehner.wallaby.AddEditWallabyActivity.REQUEST_IMAGE_CAPTURE;
-
 
 /**
  * Project Name: Wallaby
@@ -51,7 +51,7 @@ public class Camera extends Fragment {
 
     static final String LOG_TAG = AddEditWallabyActivity.class.getSimpleName();
 
-    // static final int REQUEST_IMAGE_CAPTURE = 100;
+    //static final int REQUEST_IMAGE_CAPTURE = 100;
 
 
 
@@ -61,7 +61,7 @@ public class Camera extends Fragment {
     private Context context;
     private Activity activity;
 
-    private String currentPhotoPath;
+    public String currentPhotoPath;
 
     private Uri mPhotoUri;
     private ImageView imageView;
@@ -81,7 +81,7 @@ public class Camera extends Fragment {
 
     public void checkCameraPermission() {
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            mTakePictureButton.setEnabled(false);
+            // mTakePictureButton.setEnabled(false);
             ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.CAMERA},
                     0);
         }
@@ -94,6 +94,7 @@ public class Camera extends Fragment {
 
     }
 
+    /*
     // The onRequestPermissionsResult is called on the activity and not the fragement
     // @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
@@ -101,14 +102,19 @@ public class Camera extends Fragment {
         if (requestCode == 0) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 mTakePictureButton.setEnabled(true);
+            } else {
+                Toast.makeText(context, "Camera permission not granted. Unable to take Picture.", Toast.LENGTH_LONG).show();
             }
         }
     }
+
+     */
 
 
     // create a new file name
     private File createImageFile() throws IOException {
         // Create an image file name
+        currentPhotoPath="";
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
         // File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
@@ -147,7 +153,7 @@ public class Camera extends Fragment {
             mPhotoUri = FileProvider.getUriForFile(context, "com.babarehner.wallaby.fileprovider", photoFile);
             Log.v("Uri:", mPhotoUri.toString());
             takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, mPhotoUri);
-            activity.startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+            this.startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
         }
     }
 
@@ -155,12 +161,16 @@ public class Camera extends Fragment {
         return currentPhotoPath;
     }
 
+    public Button getTakePictureButtonState(){
+        return mTakePictureButton;
+    }
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+        //super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK){
-
+            //TODO
             imageView.setImageURI(mPhotoUri);
         } else {
             if (resultCode == RESULT_CANCELED){
@@ -169,8 +179,8 @@ public class Camera extends Fragment {
             }
         }
         //get the thumbnail image
-        Bitmap thumbImage = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(currentPhotoPath), 50, 50);
-        imageThmbNail.setImageBitmap(thumbImage);
+        //Bitmap thumbImage = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(currentPhotoPath), 50, 50);
+        //imageThmbNail.setImageBitmap(thumbImage);
         //
     }
 
