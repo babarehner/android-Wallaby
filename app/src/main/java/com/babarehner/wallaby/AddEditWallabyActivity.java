@@ -59,6 +59,7 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
     static final String LOG_TAG = AddEditWallabyActivity.class.getSimpleName();
 
     public static final int EXISTING_ADD_EDIT_WALLABY_LOADER = 0;
+    public static final int THUMBSIZE = 100;
 
     private Uri mCurrentWallabyUri;
 
@@ -75,7 +76,7 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
 
     public static final int REQUEST_CAMERA_PERMISSION = 0;
 
-    String currentPhotoPath;
+    private String mCurrentPhotoPath;
 
     private Uri mPhotoUri;
 
@@ -111,7 +112,28 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
     }
 
 
-    /*
+
+
+
+
+
+
+    // Button calls this in resource file
+    public void takePicture(View v) {
+        if (!checkCameraPermission()){
+            Log.v("takePictureView ", LOG_TAG);
+            mTakePictureButton.setEnabled(false);
+        } else {
+            mTakePictureButton.setEnabled(true);  // make sure the TakePicture Button is enabled
+            // set up Camera to take picture
+            Camera myCamera = new Camera(this, this);
+            mPhotoUri = myCamera.takePicture(mImageView);
+            mCurrentPhotoPath = myCamera.getCurrentPhotoPath();
+        }
+    }
+
+
+    // onActivityResult called in Fragment Camera
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -123,36 +145,14 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
                 //TODO delete file path from the DB
             }
         }
-        Bitmap thumbImage = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(currentPhotoPath), 50, 50);
+        // Get the thumbnail image
+        Bitmap thumbImage = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(mCurrentPhotoPath), THUMBSIZE, THUMBSIZE);
         imageThmbNail.setImageBitmap(thumbImage);
-    }
-     */
-
-
-    // Button calls this in resource file
-    public void takePicture(View v) {
-        if (!checkCameraPermission()){
-            Log.v("takePictureView ", LOG_TAG);
-            mTakePictureButton.setEnabled(false);
-        } else {
-            mTakePictureButton.setEnabled(true);  // make sure the TakePicture Button is enabled
-
-            Camera myCamera = new Camera(this, this);
-
-            mPhotoUri = myCamera.takePicture(mImageView);
-            mImageView.setImageURI(mPhotoUri);
-
-            //get the thumbnail image
-            currentPhotoPath = myCamera.getCurrentPhotoPath();
-            //Bitmap thumbImage = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(currentPhotoPath), 50, 50);
-            //imageThmbNail.setImageBitmap(thumbImage);
-        }
     }
 
 
     public boolean checkCameraPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            //mTakePictureButton.setEnabled(false);
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA},
                     REQUEST_CAMERA_PERMISSION);
             return false;
@@ -174,7 +174,7 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
             } else if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Log.v( "serendipity", Integer.toString(grantResults[0]));
                 mTakePictureButton.setEnabled(true);
-                Toast.makeText(getApplicationContext(), "Camera permission granted click on ", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "Camera permission granted, click on 'Take Picture' button ", Toast.LENGTH_LONG).show();
             } else {
                 mTakePictureButton.setEnabled(false);
                 Toast.makeText(getApplicationContext(), "Camera permission not granted. Unable to take picture unless Permission given.", Toast.LENGTH_LONG).show();

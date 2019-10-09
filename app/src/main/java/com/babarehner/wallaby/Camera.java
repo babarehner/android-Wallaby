@@ -107,8 +107,8 @@ public class Camera extends Fragment {
             }
         }
     }
+    */
 
-     */
 
 
     // create a new file name
@@ -153,18 +153,19 @@ public class Camera extends Fragment {
             mPhotoUri = FileProvider.getUriForFile(context, "com.babarehner.wallaby.fileprovider", photoFile);
             Log.v("Uri:", mPhotoUri.toString());
             takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, mPhotoUri);
-            this.startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+            activity.startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
         }
     }
 
+
+    // return the phot absoluth path
     public String getCurrentPhotoPath(){
         return currentPhotoPath;
     }
 
-    public Button getTakePictureButtonState(){
-        return mTakePictureButton;
-    }
 
+    /*
+    // OnActivityResult is called in the Activity and not in the Fragment
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -183,5 +184,8 @@ public class Camera extends Fragment {
         //imageThmbNail.setImageBitmap(thumbImage);
         //
     }
+
+     */
+
 
 }

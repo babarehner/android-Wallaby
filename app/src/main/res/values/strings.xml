@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">Wallaby</string>
     <string name="action_settings">Settings</string>
+
+    <!-- activity_add_edit_wallaby -->
+    <string name="take_picture">Take Picture</string>
+
 </resources>
