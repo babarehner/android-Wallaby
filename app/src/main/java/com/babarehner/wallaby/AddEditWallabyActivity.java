@@ -1,16 +1,21 @@
 package com.babarehner.wallaby;
 
 import android.Manifest;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -21,11 +26,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NavUtils;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentFactory;
 import androidx.loader.app.LoaderManager;
+import androidx.loader.content.CursorLoader;
 import androidx.loader.content.Loader;
 
 import java.io.ByteArrayOutputStream;
@@ -33,6 +40,12 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import static com.babarehner.wallaby.data.WallabyContract.WallabyTableConstants.C_CARD_N;
+import static com.babarehner.wallaby.data.WallabyContract.WallabyTableConstants.C_IMAGE_FN;
+import static com.babarehner.wallaby.data.WallabyContract.WallabyTableConstants.C_THMB_NAIL;
+import static com.babarehner.wallaby.data.WallabyContract.WallabyTableConstants.WALLABY_URI;
+import static com.babarehner.wallaby.data.WallabyContract.WallabyTableConstants._ID;
 
 /**
  * Project Name: Wallaby
@@ -66,9 +79,12 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
     private EditText mEditTextCard;
     private Button mTakePictureButton;
     private ImageView mImageView;
-    private ImageView imageThmbNail;
+    private String mImageViewFileName;
+    private ImageView mImageThmbNail;
     private Bitmap thmbNailBitmap;
     private byte[] thmbNailBlob;
+
+    private Uri mCurrentRecordUri;
 
     private static final int REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
 
@@ -82,6 +98,23 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
 
     private static final String PATH = "images/";
 
+    private boolean mRecordChanged = false;
+    private boolean mHomeChecked;
+
+    // Touch Listener to check if changes made to a book
+    private View.OnTouchListener mTouchListener = new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            mRecordChanged = true;
+            // following line was added to suppress warning for not programming for disabled
+            // v.performClick();
+            // above line caused date picker to hang up- probably because a click needed to be handled
+            // in an onTouch event for date picker.
+            return false;
+        }
+    };
+
+
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_edit_wallaby);
@@ -89,31 +122,157 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
         Intent intent = getIntent();
         mCurrentWallabyUri = intent.getData();
 
+        if (mCurrentRecordUri == null) {
+            // set pager header to add record
+            setTitle(getString(R.string.add_record));
+        }
+
+        mEditTextCard =  findViewById(R.id.edit_card);
         mImageView = findViewById(R.id.imageView);
-        imageThmbNail = findViewById(R.id.imageThmbNail);
+        mImageThmbNail = findViewById(R.id.imageThmbNail);
         mTakePictureButton = findViewById((R.id.button_image));
+
+        mEditTextCard.setOnTouchListener(mTouchListener);
 
     }
 
     @NonNull
     @Override
     public Loader<Cursor> onCreateLoader(int id, @Nullable Bundle args) {
-        return null;
+        String[] projection = {_ID, C_CARD_N, C_IMAGE_FN, C_THMB_NAIL};
+        Loader<Cursor> loader = new CursorLoader(this, mCurrentRecordUri, projection, null,
+                null, null);
+        return loader;
     }
+
 
     @Override
-    public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
+    public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor c) {
+        if (c.moveToFirst()) {
+            int cardNameIndex = c.getColumnIndex(C_CARD_N);
+            int fileNameIndex = c.getColumnIndex(C_IMAGE_FN);
+            int thumbNailIndex = c.getColumnIndex(C_THMB_NAIL);
 
+            String cardName = c.getString(cardNameIndex);
+            String fileName = c.getString(fileNameIndex);
+            byte[] thumbNail = c.getBlob(thumbNailIndex);
+
+            mEditTextCard.setText(cardName);
+            //TODO get the file and set it to mImageView
+            Bitmap bitmapThumbNail = getBitmapFromByte(thumbNail);
+            mImageThmbNail.setImageBitmap(bitmapThumbNail);
+        }
     }
+
 
     @Override
     public void onLoaderReset(@NonNull Loader<Cursor> loader) {
+        mEditTextCard.setText("");
 
     }
 
 
+    @Override   // hide delete/share menu items when adding a new exercise
+    public boolean onPrepareOptionsMenu(Menu m) {
+        super.onPrepareOptionsMenu(m);
+        // if this is add an exercise, hide "delete" menu item
+
+        if (mCurrentRecordUri == null) {
+            MenuItem deleteItem = m.findItem(R.id.action_delete);
+            deleteItem.setVisible(false);
+        }
+        return true;
+    }
 
 
+    @Override   // set up the menu the first time
+    public boolean onCreateOptionsMenu(Menu m) {
+        getMenuInflater().inflate(R.menu.menu_add_edit_wallaby_activity, m);
+        return true;
+    }
+
+
+    @Override        // Select from the options menu
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_save:
+                saveRecord();
+                finish();       // exit activity
+                return true;
+            case R.id.action_delete:
+                // Alert Dialog for deleting one record
+                // showDeleteConfirmationDialog();
+                //showDeleteConfirmationDialogFrag(); implement this one
+                return true;
+            // this is the <- button on the header
+            case android.R.id.home:
+                // record has not changed
+                if (!mRecordChanged) {
+                    NavUtils.navigateUpFromSameTask(AddEditWallabyActivity.this);
+                    return true;
+                }
+                mHomeChecked = true;
+                // showUnsavedChangesDialogFragment(); implement this one
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+
+    // Override the activity's normal back button. If book has changed create a
+    // discard click listener that closed current activity.
+    @Override
+    public void onBackPressed() {
+        if (!mRecordChanged) {
+            super.onBackPressed();
+            return;
+        }
+        //otherwise if there are unsaved changes setup a dialog to warn the  user
+        //handles the user confirming that changes should be made
+        mHomeChecked = false;
+        //showUnsavedChangesDialogFragment();
+    }
+
+
+
+    private void saveRecord(){
+
+        String strCardName = mEditTextCard.getText().toString().trim();
+        String strFileName = mImageViewFileName;
+        mImageView.setDrawingCacheEnabled(true);
+        Bitmap bmap = mImageView.getDrawingCache();
+        byte[] bThumbNail = getPictureByteOfArray(bmap);
+
+        ContentValues values = new ContentValues();
+        values.put(C_CARD_N, strCardName);
+        values.put(C_IMAGE_FN, strFileName);
+        values.put(C_THMB_NAIL, bThumbNail);
+
+        if (mCurrentRecordUri == null) {
+            Log.v(LOG_TAG, "in saveRecord " + WALLABY_URI.toString() + "\n\n\n\n\n\n\n" );
+            Uri newUri = getContentResolver().insert(WALLABY_URI, values);
+            if (newUri == null) {
+                Toast.makeText(this, getString(R.string.insert_record_failed),
+                        Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(this, getString(R.string.insert_record_succeeded),
+                        Toast.LENGTH_LONG).show();
+            }
+        } else {
+            // existing record so update with content URI and pass in ContentValues
+            int rowsAffected = getContentResolver().update(mCurrentRecordUri, values, null, null);
+            if (rowsAffected == 0) {
+                // TODO Check db- Text Not Null does not seem to be working or entering todo from PartsRunner
+                // "" does not mean NOT Null- there must be an error message closer to the db!!!
+                Toast.makeText(this, getString(R.string.edit_update_record_failed),
+                        Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, getString(R.string.edit_update_record_success),
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+
+    }
 
 
 
@@ -129,6 +288,7 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
             Camera myCamera = new Camera(this, this);
             mPhotoUri = myCamera.takePicture(mImageView);
             mCurrentPhotoPath = myCamera.getCurrentPhotoPath();
+            mImageViewFileName = myCamera.getFileName();
         }
     }
 
@@ -147,7 +307,7 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
         }
         // Get the thumbnail image
         Bitmap thumbImage = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(mCurrentPhotoPath), THUMBSIZE, THUMBSIZE);
-        imageThmbNail.setImageBitmap(thumbImage);
+        mImageThmbNail.setImageBitmap(thumbImage);
     }
 
 

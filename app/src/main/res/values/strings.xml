@@ -4,5 +4,13 @@
 
     <!-- activity_add_edit_wallaby -->
     <string name="take_picture">Take Picture</string>
+    <string name="add_record">Add Record</string>
+    <string name="action_save">Save</string>
+    <string name="action_delete">Delete</string>
+    <string name="insert_record_failed">Insert record failed</string>
+    <string name="insert_record_succeeded">Insert record succeeded</string>
+    <string name="edit_update_record_failed">Update record failed</string>
+    <string name="edit_update_record_success">Update record succeeded</string>
+
 
 </resources>

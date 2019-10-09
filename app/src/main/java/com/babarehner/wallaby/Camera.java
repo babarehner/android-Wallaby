@@ -65,6 +65,7 @@ public class Camera extends Fragment {
 
     private Uri mPhotoUri;
     private ImageView imageView;
+    private File photoFile;
     private ImageView imageThmbNail;
 
     public Camera( Context context, Activity activity){
@@ -140,7 +141,7 @@ public class Camera extends Fragment {
         Log.v("starting dispatchTake ", LOG_TAG);
         if (takePictureIntent.resolveActivity(activity.getPackageManager()) != null) {
             // Create the filew where the photo should go
-            File photoFile = null;
+            photoFile = null;
             try {
                 photoFile = createImageFile();
                 Log.v("photoFile: ", photoFile.toString());
@@ -162,6 +163,8 @@ public class Camera extends Fragment {
     public String getCurrentPhotoPath(){
         return currentPhotoPath;
     }
+
+    public String getFileName() { return photoFile.toString();}
 
 
     /*

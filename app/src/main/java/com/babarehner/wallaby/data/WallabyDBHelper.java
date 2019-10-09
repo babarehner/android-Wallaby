@@ -47,7 +47,7 @@ public class WallabyDBHelper extends SQLiteOpenHelper {
         final String SQL_CREATE_WALLABY_TABLE = "CREATE TABLE " +
                 WALLABY_TABLE_NAME + " (" +
                 _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                C_CARD_N + "TEXT, " +
+                C_CARD_N + " TEXT, " +
                 C_IMAGE_FN + " TEXT, " +
                 C_THMB_NAIL + " BLOB, " +
                 C_DATE + " TIMESTAMP DEFAULT CURRENT_TIMESTAMP );";     //Unix Time in Long ms

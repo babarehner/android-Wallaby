@@ -40,7 +40,7 @@
 
         <provider
             android:name=".data.WallabyProvider"
-            android:authorities="com.babarehner.android.wallaby.data"
+            android:authorities="com.babarehner.wallaby"
             android:exported="false" />
 
 
