@@ -56,6 +56,6 @@ public class WallabyContract {
         public static final String C_CARD_N = "CCardName";
         public static final String C_IMAGE_FN = "CImageFN";
         public static final String C_THMB_NAIL = "CThmbNail";
-        public static final String C_DATE = "CDate";
+        //public static final String C_DATE = "CDate";
     }
 }

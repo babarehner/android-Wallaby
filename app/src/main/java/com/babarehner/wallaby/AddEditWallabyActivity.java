@@ -125,6 +125,10 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
         if (mCurrentRecordUri == null) {
             // set pager header to add record
             setTitle(getString(R.string.add_record));
+        } else {
+            setTitle( "Edit Record");
+            // line below replaces getLoaderManager().initLoader(LOADER_WALLABY, null, AddEditWallaby.this);
+            LoaderManager.getInstance(this);
         }
 
         mEditTextCard =  findViewById(R.id.edit_card);
@@ -265,10 +269,10 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
                 // TODO Check db- Text Not Null does not seem to be working or entering todo from PartsRunner
                 // "" does not mean NOT Null- there must be an error message closer to the db!!!
                 Toast.makeText(this, getString(R.string.edit_update_record_failed),
-                        Toast.LENGTH_SHORT).show();
+                        Toast.LENGTH_LONG).show();
             } else {
                 Toast.makeText(this, getString(R.string.edit_update_record_success),
-                        Toast.LENGTH_SHORT).show();
+                        Toast.LENGTH_LONG).show();
             }
         }
 

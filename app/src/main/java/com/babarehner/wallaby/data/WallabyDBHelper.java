@@ -30,9 +30,9 @@ public class WallabyDBHelper extends SQLiteOpenHelper {
     // To allow for changes in DB versioning and keeping user data
     private static final int DB_VERSION = 1;
 
-    static final String DB_NAME = "wallaby.db";
+    private static final String DB_NAME = "wallaby.db";
 
-    public WallabyDBHelper(Context context) {
+    WallabyDBHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
     }
 
@@ -49,8 +49,8 @@ public class WallabyDBHelper extends SQLiteOpenHelper {
                 _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 C_CARD_N + " TEXT, " +
                 C_IMAGE_FN + " TEXT, " +
-                C_THMB_NAIL + " BLOB, " +
-                C_DATE + " TIMESTAMP DEFAULT CURRENT_TIMESTAMP );";     //Unix Time in Long ms
+                C_THMB_NAIL + " BLOB );";
+                //C_DATE + " TIMESTAMP DEFAULT CURRENT_TIMESTAMP );";     //Unix Time in Long ms
 
         sqLiteDatabase.execSQL(SQL_CREATE_WALLABY_TABLE);
 
