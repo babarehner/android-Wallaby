@@ -33,14 +33,13 @@
         />
 
     <!--
-    <android.support.v7.widget.RecyclerView
+    <androidx.widget.RecyclerView
         android:id="@+id/recyclerview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/textview_test"
         />
     -->
-
 
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
