@@ -1,6 +1,5 @@
 package com.babarehner.wallaby;
 
-import android.content.ContentUris;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -14,7 +13,11 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.loader.app.LoaderManager;
+import androidx.loader.content.CursorLoader;
 import androidx.loader.content.Loader;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.View;
 import android.view.Menu;
@@ -26,12 +29,27 @@ import static com.babarehner.wallaby.data.WallabyContract.WallabyTableConstants.
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
+    RecyclerView mRecyclerView;
+    private static final int WALLABY_LOADER_ID = 1;
+    WallabyCursorAdapter mAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        // bind view
+        mRecyclerView = findViewById(R.id.recycler_view);
+        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
+        // set layout manager
+        mRecyclerView.setLayoutManager(mLayoutManager);
+        // set default animator
+        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        mAdapter = new WallabyCursorAdapter();
+        mRecyclerView.setAdapter(mAdapter);
+
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -42,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             }
         });
 
-        // LoaderManager.getInstance(this);
+        LoaderManager.getInstance(MainActivity.this).initLoader(WALLABY_LOADER_ID, null, MainActivity.this);
     }
 
     @Override
@@ -70,16 +88,36 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @NonNull
     @Override
     public Loader<Cursor> onCreateLoader(int id, @Nullable Bundle args) {
+        if (id == WALLABY_LOADER_ID) {
+            Uri wallabyUri = WALLABY_URI;
+
+            String[] projection = {WallabyContract.WallabyTableConstants.C_CARD_N,
+                WallabyContract.WallabyTableConstants.C_IMAGE_FN};
+
+            String selection = null;
+            String[] selectionArgs = {};
+            String sortOrder = null;
+
+            return new CursorLoader(
+                    getApplicationContext(),
+                    wallabyUri,
+                    projection,
+                    selection,
+                    selectionArgs,
+                    sortOrder);
+        }
         return null;
     }
 
     @Override
     public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
+        mAdapter.swapCursor(data);
 
     }
 
     @Override
     public void onLoaderReset(@NonNull Loader<Cursor> loader) {
+        mAdapter.swapCursor(null);
 
     }
 }

@@ -2,7 +2,6 @@ package com.babarehner.wallaby;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.provider.ContactsContract;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.babarehner.wallaby.BaseCursorAdapter;
+import com.babarehner.wallaby.data.WallabyContract;
 
 
 /**
@@ -41,16 +41,19 @@ public class WallabyCursorAdapter extends BaseCursorAdapter<WallabyCursorAdapter
 
     @Override
     public WallabyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View formNameView = LayoutInflater.from(parent.getContext()).inflate(R.layout.wallaby_item, parent, false);
+        View formNameView = LayoutInflater.from(parent.getContext()).inflate(R.layout.card_item, parent, false);
         return new WallabyViewHolder(formNameView);
     }
 
 
     @Override
     public void onBindViewHolder(WallabyViewHolder holder, Cursor cursor) {
-        int mColumnIndexName = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
-        String contactName = cursor.getString(mColumnIndexName);
-        holder.nameTextView.setText(contactName);
+        int mColumnIndexName = cursor.getColumnIndex(WallabyContract.WallabyTableConstants.C_CARD_N);
+        int mColumnIndexFileName = cursor.getColumnIndex(WallabyContract.WallabyTableConstants.C_IMAGE_FN);
+        String cardName = cursor.getString(mColumnIndexName);
+        String fileName = cursor.getString(mColumnIndexFileName);
+        holder.nameTextView.setText(cardName);
+        holder.fileNameTextView.setText(fileName);
     }
 
     @Override
@@ -61,10 +64,12 @@ public class WallabyCursorAdapter extends BaseCursorAdapter<WallabyCursorAdapter
     class WallabyViewHolder extends RecyclerView.ViewHolder {
 
         TextView nameTextView;
+        TextView fileNameTextView;
 
         WallabyViewHolder(View itemView) {
             super(itemView);
             nameTextView = itemView.findViewById(R.id.graphic_name);
+            fileNameTextView = itemView.findViewById(R.id.file_name);
         }
     }
 
