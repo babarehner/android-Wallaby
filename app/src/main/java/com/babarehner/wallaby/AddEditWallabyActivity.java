@@ -2,6 +2,7 @@ package com.babarehner.wallaby;
 
 import android.Manifest;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -34,6 +35,8 @@ import androidx.fragment.app.FragmentFactory;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.CursorLoader;
 import androidx.loader.content.Loader;
+
+import com.bumptech.glide.Glide;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -100,6 +103,7 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
 
     private boolean mRecordChanged = false;
     private boolean mHomeChecked;
+
 
     // Touch Listener to check if changes made to a book
     private View.OnTouchListener mTouchListener = new View.OnTouchListener() {
@@ -302,7 +306,9 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK){
-            mImageView.setImageURI(mPhotoUri);
+            // mImageView.setImageURI(mPhotoUri);
+            Context context = AddEditWallabyActivity.this; // Redundant but makes clear how to get context of activity
+            Glide.with(context).load(mPhotoUri).into(mImageView);
         } else {
             if (resultCode == RESULT_CANCELED){
                 // user cancelled the image capture
