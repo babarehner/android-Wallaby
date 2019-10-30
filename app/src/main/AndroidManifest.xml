@@ -38,6 +38,16 @@
                 android:value=".AddEditWallabyActivity" />
         </activity>
 
+        <activity
+            android:name=".ScanPictureActivity"
+            android:screenOrientation="landscape"
+            android:configChanges="orientation|keyboardHidden">
+            <!-- Parent activity metadata to support Android 4.0 and lower -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
+        </activity>
+
         <provider
             android:name=".data.WallabyProvider"
             android:authorities="com.babarehner.wallaby"

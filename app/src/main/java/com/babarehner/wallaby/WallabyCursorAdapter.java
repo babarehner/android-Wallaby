@@ -1,6 +1,7 @@
 package com.babarehner.wallaby;
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -17,6 +18,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.babarehner.wallaby.BaseCursorAdapter;
 import com.babarehner.wallaby.data.WallabyContract;
 import com.bumptech.glide.Glide;
+
+import java.util.ArrayList;
 
 
 /**
@@ -39,10 +42,17 @@ import com.bumptech.glide.Glide;
 
 public class WallabyCursorAdapter extends BaseCursorAdapter<WallabyCursorAdapter.WallabyViewHolder> {
 
-    Context mContext;
+    private Context mContext;
+    private ArrayList<String> mFileNames = new ArrayList<>();
+    private Cursor mCursor;
 
-    public WallabyCursorAdapter(){
+    private RecyclerViewClickListener mListener;
+    // private List<Data> mDataset = new ArrayList<>();
+
+
+    public WallabyCursorAdapter(RecyclerViewClickListener listener){
         super(null);
+        mListener = listener;
     }
 
 
@@ -50,39 +60,65 @@ public class WallabyCursorAdapter extends BaseCursorAdapter<WallabyCursorAdapter
     public WallabyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View formNameView = LayoutInflater.from(parent.getContext()).inflate(R.layout.card_item, parent, false);
         mContext = parent.getContext();
-        return new WallabyViewHolder(formNameView);
+        return new WallabyViewHolder(formNameView, mListener);
     }
 
 
     @Override
     public void onBindViewHolder(WallabyViewHolder holder, Cursor cursor) {
+
         int mColumnIndexName = cursor.getColumnIndex(WallabyContract.WallabyTableConstants.C_CARD_N);
         int mColumnIndexFileName = cursor.getColumnIndex(WallabyContract.WallabyTableConstants.C_IMAGE_FN);
         String cardName = cursor.getString(mColumnIndexName);
-        String fileName = cursor.getString(mColumnIndexFileName);
+        final String fileName = cursor.getString(mColumnIndexFileName);
         holder.nameTextView.setText(cardName);
-        //holder.fileNameTextView.setText(fileName);
+        holder.fileNameTextView.setText(fileName);
         Glide.with(mContext).load(fileName).into(holder.image);
 
     }
+
 
     @Override
     public void swapCursor(Cursor newCursor) {
         super.swapCursor(newCursor);
     }
 
-    class WallabyViewHolder extends RecyclerView.ViewHolder {
+
+
+    class WallabyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+
+        private RecyclerViewClickListener mListener;
 
         TextView nameTextView;
         TextView fileNameTextView;
         ImageView image;
 
-        WallabyViewHolder(View itemView) {
-            super(itemView);
+        WallabyViewHolder(View v, RecyclerViewClickListener listener) {
+            super(v);
+
             nameTextView = itemView.findViewById(R.id.graphic_name);
             fileNameTextView = itemView.findViewById(R.id.file_name);
             image = itemView.findViewById(R.id.imageView);
+
+            mListener = listener;
+            v.setOnClickListener(this);
+
         }
+
+
+        @Override
+        public void onClick(View v) {
+            mListener.onClick(v, getLayoutPosition());
+
+
+        }
+    }
+
+    // Use interface- implemented in MainActivity
+    public interface RecyclerViewClickListener{
+
+        void onClick(View v, int pos);
+
     }
 
 

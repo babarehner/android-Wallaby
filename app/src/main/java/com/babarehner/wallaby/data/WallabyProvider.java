@@ -47,7 +47,7 @@ public class WallabyProvider extends ContentProvider {
 
     static{
         sUriMatcher.addURI(WALLABY_AUTHORITY, PATH_WALLABY_TABLE_NAME, WALLABIES);
-        sUriMatcher.addURI(WALLABY_AUTHORITY, PATH_WALLABY_TABLE_NAME + "/#", WALLABIES);
+        sUriMatcher.addURI(WALLABY_AUTHORITY, PATH_WALLABY_TABLE_NAME + "/#", WALLABY_ID);
     }
     @Override
     public boolean onCreate() {

@@ -20,16 +20,9 @@ import android.net.Uri;
  * limitations under the License.
  */
 
-public interface SharePicture {
-    String filename = "";
-    Uri cardUri = null;
+public class Utility {
 
-    void setFilename(String fn);
-
-    String getFilename();
-
-    void setCardUri(Uri cardUri);
-
-    Uri getCardUri();
+    public static String filename;
+    public static Uri cardUri;
 
 }

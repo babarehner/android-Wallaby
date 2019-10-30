@@ -1,5 +1,6 @@
 package com.babarehner.wallaby;
 
+import android.content.ContentUris;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -19,15 +20,20 @@ import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.babarehner.wallaby.data.WallabyContract;
 
 import static com.babarehner.wallaby.data.WallabyContract.WallabyTableConstants.WALLABY_URI;
 
-public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
+public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>,
+        WallabyCursorAdapter.RecyclerViewClickListener {
+
+    public static final String TAG = "MainActivity";
 
     RecyclerView mRecyclerView;
     private static final int WALLABY_LOADER_ID = 1;
@@ -47,7 +53,15 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         mRecyclerView.setLayoutManager(mLayoutManager);
         // set default animator
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        mAdapter = new WallabyCursorAdapter();
+        /*
+        WallabyCursorAdapter.RecyclerViewClickListener listener = (view, position) -> {
+            Toast.makeText(view.getContext(), "Position " + position, Toast.LENGTH_LONG).show();
+            Intent intent = new Intent(view.getContext(), ScanPictureActivity.class);
+
+            view.getContext().startActivity(intent);
+        };
+         */
+        mAdapter = new WallabyCursorAdapter(this);
         mRecyclerView.setAdapter(mAdapter);
 
 
@@ -119,5 +133,21 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public void onLoaderReset(@NonNull Loader<Cursor> loader) {
         mAdapter.swapCursor(null);
 
+    }
+
+    @Override
+    public void onClick(View v, int pos) {
+        //Toast.makeText(v.getContext(), "Position " + pos, Toast.LENGTH_LONG).show();
+        // 'pos' is the position of the view in the parent. For a ListView it is the row number
+        // for a CursorAdapter the long id returns the row of the table
+        // had to add 1 to pos to get correct record to show. No Zero in id????
+        long id = pos + 1;
+        Log.d(TAG, "id is : " + id);
+        Intent intent = new Intent(v.getContext(), ScanPictureActivity.class);
+        Uri currentRecyclerUri = ContentUris.withAppendedId(WALLABY_URI, id);
+        intent.setData(currentRecyclerUri);
+        //Toast.makeText(v.getContext(), "id: " + id, Toast.LENGTH_LONG).show();
+        //Toast.makeText(v.getContext(), "Uri: " + currentRecyclerUri, Toast.LENGTH_LONG).show();
+        startActivity(intent);
     }
 }
