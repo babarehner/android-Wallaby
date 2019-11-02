@@ -9,6 +9,8 @@ import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -46,12 +48,22 @@ public class WallabyCursorAdapter extends BaseCursorAdapter<WallabyCursorAdapter
     private ArrayList<String> mFileNames = new ArrayList<>();
     private Cursor mCursor;
 
-    private RecyclerViewClickListener mListener;
-    // private List<Data> mDataset = new ArrayList<>();
+    public interface OnItemClickLIstener{
+        void omItemClick(View view, int position);
+        void onEditButtonClick(View view, int position);
+    }
 
+    private AdapterView.OnItemClickListener mListener;
 
-    public WallabyCursorAdapter(RecyclerViewClickListener listener){
+    //private RecyclerViewClickListener mListener;
+    //private List<Data> mDataset = new ArrayList<>();
+
+    public WallabyCursorAdapter(){
         super(null);
+         //mListener = listener;
+    }
+
+    public void setOnItemClickListener(AdapterView.OnItemClickListener listener){
         mListener = listener;
     }
 
@@ -60,7 +72,7 @@ public class WallabyCursorAdapter extends BaseCursorAdapter<WallabyCursorAdapter
     public WallabyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View formNameView = LayoutInflater.from(parent.getContext()).inflate(R.layout.card_item, parent, false);
         mContext = parent.getContext();
-        return new WallabyViewHolder(formNameView, mListener);
+        return new WallabyViewHolder(formNameView, (OnItemClickLIstener) mListener);
     }
 
 
@@ -75,6 +87,7 @@ public class WallabyCursorAdapter extends BaseCursorAdapter<WallabyCursorAdapter
         holder.fileNameTextView.setText(fileName);
         Glide.with(mContext).load(fileName).into(holder.image);
 
+        //animate holder
     }
 
 
@@ -85,41 +98,73 @@ public class WallabyCursorAdapter extends BaseCursorAdapter<WallabyCursorAdapter
 
 
 
-    class WallabyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public static class WallabyViewHolder extends RecyclerView.ViewHolder {
 
-        private RecyclerViewClickListener mListener;
+        //private RecyclerViewClickListener mListener;
+        //private RecyclerViewClickListener mButtonLIstener;
 
         TextView nameTextView;
         TextView fileNameTextView;
         ImageView image;
+        Button b;
 
-        WallabyViewHolder(View v, RecyclerViewClickListener listener) {
-            super(v);
+        WallabyViewHolder(View itemView, final OnItemClickLIstener listener) {
+            super(itemView);
 
             nameTextView = itemView.findViewById(R.id.graphic_name);
             fileNameTextView = itemView.findViewById(R.id.file_name);
             image = itemView.findViewById(R.id.imageView);
+            b = itemView.findViewById(R.id.button_image);
 
-            mListener = listener;
-            v.setOnClickListener(this);
+            // mListener = listener;
+            //v.setOnClickListener(this);
+
+            itemView.setOnClickListener(new View.OnClickListener(){
+                public void onClick(View v){
+                    if (listener != null){
+                        int position = getLayoutPosition();
+                        if (position != RecyclerView.NO_POSITION){
+                            listener.omItemClick(v, position);
+                        }
+                    }
+                }
+            });
+
+
+            b.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (listener != null){
+                        int position = getLayoutPosition();
+                        if (position != RecyclerView.NO_POSITION){
+                            listener.onEditButtonClick(view, position);
+                        }
+                    }
+
+                }
+            });
+
 
         }
 
 
-        @Override
-        public void onClick(View v) {
-            mListener.onClick(v, getLayoutPosition());
+       // @Override
+        //public void onClick(View v) {
+        //    mListener.onClick(v, getLayoutPosition());
+        //}
 
 
-        }
     }
+
 
     // Use interface- implemented in MainActivity
-    public interface RecyclerViewClickListener{
+    //public interface RecyclerViewClickListener{
 
-        void onClick(View v, int pos);
+        //void onClick(View v, int pos);
 
-    }
+        //void onButtonClick(int pos);
+
+    //}
 
 
 
