@@ -24,14 +24,14 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.AdapterView;
 import android.widget.Toast;
 
 import com.babarehner.wallaby.data.WallabyContract;
 
 import static com.babarehner.wallaby.data.WallabyContract.WallabyTableConstants.WALLABY_URI;
 
-public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>,
-        WallabyCursorAdapter.RecyclerViewClickListener {
+public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>{
 
     public static final String TAG = "MainActivity";
 
@@ -57,12 +57,27 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         WallabyCursorAdapter.RecyclerViewClickListener listener = (view, position) -> {
             Toast.makeText(view.getContext(), "Position " + position, Toast.LENGTH_LONG).show();
             Intent intent = new Intent(view.getContext(), ScanPictureActivity.class);
-
             view.getContext().startActivity(intent);
         };
-         */
-        mAdapter = new WallabyCursorAdapter(this);
+        */
+        mAdapter = new WallabyCursorAdapter();  // had to erase 'this'  to get it to work
         mRecyclerView.setAdapter(mAdapter);
+
+        mAdapter.setOnItemClickListener(new WallabyCursorAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(View v, int pos) {
+                Intent intent = new Intent(v.getContext(), ScanPictureActivity.class);
+                Uri currentRecyclerUri = ContentUris.withAppendedId(WALLABY_URI, pos + 1);
+                intent.setData(currentRecyclerUri);
+            }
+
+            @Override
+            public void onEditButtonClick(View view, int pos) {
+                Intent intent = new Intent(view.getContext(), AddEditWallabyActivity.class);
+                Uri currentRecyclerUri = ContentUris.withAppendedId(WALLABY_URI, pos + 1);
+                intent.setData(currentRecyclerUri);
+            }
+        });
 
 
         FloatingActionButton fab = findViewById(R.id.fab);
@@ -134,7 +149,22 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         mAdapter.swapCursor(null);
 
     }
+    /*
+    @Override
+    public void onItemClick(View v, int pos){
+        Intent intent = new Intent(v.getContext(), ScanPictureActivity.class);
+        Uri currentRecyclerUri = ContentUris.withAppendedId(WALLABY_URI, pos + 1);
+        intent.setData(currentRecyclerUri);
+    }
 
+    @Override
+    public void onEditButtonClick(View view, int pos){
+        Intent intent = new Intent(view.getContext(), AddEditWallabyActivity.class);
+        Uri currentRecyclerUri = ContentUris.withAppendedId(WALLABY_URI, pos + 1);
+        intent.setData(currentRecyclerUri);
+    }
+    */
+    /*
     @Override
     public void onClick(View v, int pos) {
         //Toast.makeText(v.getContext(), "Position " + pos, Toast.LENGTH_LONG).show();
@@ -150,4 +180,5 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         //Toast.makeText(v.getContext(), "Uri: " + currentRecyclerUri, Toast.LENGTH_LONG).show();
         startActivity(intent);
     }
+     */
 }
