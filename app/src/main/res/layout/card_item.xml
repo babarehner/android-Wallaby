@@ -47,10 +47,25 @@
             android:layout_marginStart="@dimen/min"
             android:textSize="@dimen/_10sp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toEndOf="@id/edit_button"
             app:layout_constraintStart_toEndOf="@+id/graphic_name"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_chainStyle="packed"
+            />
+
+        <Button
+            android:id="@+id/edit_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/min"
+            android:layout_marginStart="@dimen/min"
+            android:text="Edit Card"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/file_name"
+            app:layout_constraintVertical_chainStyle="packed"
+
             />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
