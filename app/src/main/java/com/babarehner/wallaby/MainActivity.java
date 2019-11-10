@@ -53,15 +53,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         mRecyclerView.setLayoutManager(mLayoutManager);
         // set default animator
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        /*
-        WallabyCursorAdapter.RecyclerViewClickListener listener = (view, position) -> {
-            Toast.makeText(view.getContext(), "Position " + position, Toast.LENGTH_LONG).show();
-            Intent intent = new Intent(view.getContext(), ScanPictureActivity.class);
 
-            view.getContext().startActivity(intent);
-        };
-         */
-        mAdapter = new WallabyCursorAdapter(this);
+        mAdapter = new WallabyCursorAdapter(this );
+
         mRecyclerView.setAdapter(mAdapter);
 
 
@@ -136,18 +130,32 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     @Override
-    public void onClick(View v, int pos) {
+    public void onItemClick(int pos) {
         //Toast.makeText(v.getContext(), "Position " + pos, Toast.LENGTH_LONG).show();
         // 'pos' is the position of the view in the parent. For a ListView it is the row number
         // for a CursorAdapter the long id returns the row of the table
         // had to add 1 to pos to get correct record to show. No Zero in id????
         long id = pos + 1;
         Log.d(TAG, "id is : " + id);
-        Intent intent = new Intent(v.getContext(), ScanPictureActivity.class);
+        Intent intent = new Intent(this, ScanPictureActivity.class);
         Uri currentRecyclerUri = ContentUris.withAppendedId(WALLABY_URI, id);
         intent.setData(currentRecyclerUri);
         //Toast.makeText(v.getContext(), "id: " + id, Toast.LENGTH_LONG).show();
         //Toast.makeText(v.getContext(), "Uri: " + currentRecyclerUri, Toast.LENGTH_LONG).show();
         startActivity(intent);
     }
+
+
+    @Override
+    public void onButtonClick(int pos){
+        long id = pos + 1;
+        Log.d(TAG, "id is : " + id);
+        Intent intent = new Intent(this, AddEditWallabyActivity.class);
+        Uri currentRecyclerUri = ContentUris.withAppendedId(WALLABY_URI, id);
+        intent.setData(currentRecyclerUri);
+        //Toast.makeText(v.getContext(), "id: " + id, Toast.LENGTH_LONG).show();
+        //Toast.makeText(v.getContext(), "Uri: " + currentRecyclerUri, Toast.LENGTH_LONG).show();
+        startActivity(intent);
+    }
+
 }

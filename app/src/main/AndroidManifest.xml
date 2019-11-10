@@ -40,12 +40,13 @@
 
         <activity
             android:name=".ScanPictureActivity"
+            android:parentActivityName=".MainActivity"
             android:screenOrientation="landscape"
             android:configChanges="orientation|keyboardHidden">
             <!-- Parent activity metadata to support Android 4.0 and lower -->
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MainActivity" />
+                android:value=".ScanPictureActivity" />
         </activity>
 
         <provider
