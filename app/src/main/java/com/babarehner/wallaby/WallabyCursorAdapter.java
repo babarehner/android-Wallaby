@@ -65,6 +65,7 @@ public class WallabyCursorAdapter extends BaseCursorAdapter<WallabyCursorAdapter
 
 
     @Override
+    @NonNull
     public WallabyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View formNameView = LayoutInflater.from(parent.getContext()).inflate(R.layout.card_item, parent, false);
         mContext = parent.getContext();
@@ -110,25 +111,37 @@ public class WallabyCursorAdapter extends BaseCursorAdapter<WallabyCursorAdapter
             nameTextView = itemView.findViewById(R.id.graphic_name);
             fileNameTextView = itemView.findViewById(R.id.file_name);
             image = itemView.findViewById(R.id.imageView);
-            b =itemView.findViewById(R.id.edit_button);
+            b = itemView.findViewById(R.id.edit_button);
 
             this.listener = listener;
             ///this.buttonListener = buttonListener;
 
-            v.setOnClickListener(this);
+            image.setOnClickListener(this);
             b.setOnClickListener(this);
-
         }
 
 
+        /*
+        Seems to not work at times clicking on the image- like click not picked up/dropped???
+         */
         @Override
         public void onClick(View view) {
             switch (view.getId()){
                 case R.id.imageView:
-                    listener.onItemClick(this.getLayoutPosition());
+                    if (listener != null){
+                        int position = getAdapterPosition();
+                        if (position != RecyclerView.NO_POSITION){
+                            listener.onItemClick(position);
+                        }
+                    }
                     break;
                 case R.id.edit_button:
-                    listener.onButtonClick(this.getLayoutPosition());
+                    if (listener != null){
+                        int position = getAdapterPosition();
+                        if (position != RecyclerView.NO_POSITION){
+                            listener.onButtonClick(position);
+                        }
+                    }
                     break;
                 default:
                     break;
@@ -142,9 +155,6 @@ public class WallabyCursorAdapter extends BaseCursorAdapter<WallabyCursorAdapter
 
         void onItemClick(int pos);
         void onButtonClick(int pos);
-
     }
-
-
 
 }

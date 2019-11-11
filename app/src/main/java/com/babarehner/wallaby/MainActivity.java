@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         // set default animator
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
 
-        mAdapter = new WallabyCursorAdapter(this );
+        mAdapter = new WallabyCursorAdapter(this );  // MainActivity.this???
 
         mRecyclerView.setAdapter(mAdapter);
 
@@ -137,7 +137,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         // had to add 1 to pos to get correct record to show. No Zero in id????
         long id = pos + 1;
         Log.d(TAG, "id is : " + id);
-        Intent intent = new Intent(this, ScanPictureActivity.class);
+        Intent intent = new Intent(MainActivity.this, ScanPictureActivity.class);
         Uri currentRecyclerUri = ContentUris.withAppendedId(WALLABY_URI, id);
         intent.setData(currentRecyclerUri);
         //Toast.makeText(v.getContext(), "id: " + id, Toast.LENGTH_LONG).show();
@@ -150,7 +150,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public void onButtonClick(int pos){
         long id = pos + 1;
         Log.d(TAG, "id is : " + id);
-        Intent intent = new Intent(this, AddEditWallabyActivity.class);
+        Intent intent = new Intent(MainActivity.this, AddEditWallabyActivity.class);
         Uri currentRecyclerUri = ContentUris.withAppendedId(WALLABY_URI, id);
         intent.setData(currentRecyclerUri);
         //Toast.makeText(v.getContext(), "id: " + id, Toast.LENGTH_LONG).show();
