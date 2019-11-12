@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 startActivity(intent);
             }
         });
-
+        //LoaderManager.getInstance(this);
         LoaderManager.getInstance(MainActivity.this).initLoader(WALLABY_LOADER_ID, null, MainActivity.this);
     }
 
@@ -130,7 +130,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     @Override
-    public void onItemClick(int pos) {
+    public void onItemClick(long pos) {
         //Toast.makeText(v.getContext(), "Position " + pos, Toast.LENGTH_LONG).show();
         // 'pos' is the position of the view in the parent. For a ListView it is the row number
         // for a CursorAdapter the long id returns the row of the table
@@ -154,7 +154,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         Uri currentRecyclerUri = ContentUris.withAppendedId(WALLABY_URI, id);
         intent.setData(currentRecyclerUri);
         //Toast.makeText(v.getContext(), "id: " + id, Toast.LENGTH_LONG).show();
-        //Toast.makeText(v.getContext(), "Uri: " + currentRecyclerUri, Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "Uri: " + currentRecyclerUri, Toast.LENGTH_LONG).show();
         startActivity(intent);
     }
 

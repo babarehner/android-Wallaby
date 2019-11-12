@@ -77,8 +77,6 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
     public static final int EXISTING_ADD_EDIT_WALLABY_LOADER = 0;
     public static final int THUMBSIZE = 100;
 
-    private Uri mCurrentWallabyUri;
-
     private EditText mEditTextCard;
     private Button mTakePictureButton;
     private ImageView mImageView;
@@ -124,15 +122,16 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
         setContentView(R.layout.activity_add_edit_wallaby);
 
         Intent intent = getIntent();
-        mCurrentWallabyUri = intent.getData();
+        mCurrentRecordUri = intent.getData();
 
         if (mCurrentRecordUri == null) {
             // set pager header to add record
             setTitle(getString(R.string.add_record));
         } else {
             setTitle( "Edit Record");
-            // line below replaces getLoaderManager().initLoader(LOADER_WALLABY, null, AddEditWallaby.this);
-            LoaderManager.getInstance(this);
+            //getLoaderManager().initLoader(EXISTING_ADD_EDIT_WALLABY_LOADER, null, this);
+            LoaderManager.getInstance(AddEditWallabyActivity.this).initLoader(EXISTING_ADD_EDIT_WALLABY_LOADER, null, AddEditWallabyActivity.this);
+            Toast.makeText(this, "mCurrentRecordUri: " + mCurrentRecordUri, Toast.LENGTH_LONG).show();
         }
 
         mEditTextCard =  findViewById(R.id.edit_card);
@@ -141,14 +140,14 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
         mTakePictureButton = findViewById((R.id.button_image));
 
         mEditTextCard.setOnTouchListener(mTouchListener);
-
     }
+
 
     @NonNull
     @Override
     public Loader<Cursor> onCreateLoader(int id, @Nullable Bundle args) {
         String[] projection = {_ID, C_CARD_N, C_IMAGE_FN, C_THMB_NAIL};
-        Loader<Cursor> loader = new CursorLoader(this, mCurrentRecordUri, projection, null,
+        Loader<Cursor> loader = new CursorLoader(getApplicationContext(), mCurrentRecordUri, projection, null,
                 null, null);
         return loader;
     }
@@ -330,6 +329,8 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
             return true;
         }
     }
+
+    //TODO update record
 
 
     @Override
