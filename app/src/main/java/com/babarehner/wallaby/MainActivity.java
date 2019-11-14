@@ -29,6 +29,7 @@ import android.widget.Toast;
 import com.babarehner.wallaby.data.WallabyContract;
 
 import static com.babarehner.wallaby.data.WallabyContract.WallabyTableConstants.WALLABY_URI;
+import static com.babarehner.wallaby.data.WallabyContract.WallabyTableConstants._ID;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>,
         WallabyCursorAdapter.RecyclerViewClickListener {
@@ -99,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         if (id == WALLABY_LOADER_ID) {
             Uri wallabyUri = WALLABY_URI;
 
-            String[] projection = {WallabyContract.WallabyTableConstants.C_CARD_N,
+            String[] projection = {_ID, WallabyContract.WallabyTableConstants.C_CARD_N,
                 WallabyContract.WallabyTableConstants.C_IMAGE_FN};
 
             String selection = null;
@@ -130,13 +131,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     @Override
-    public void onItemClick(long pos) {
-        //Toast.makeText(v.getContext(), "Position " + pos, Toast.LENGTH_LONG).show();
-        // 'pos' is the position of the view in the parent. For a ListView it is the row number
-        // for a CursorAdapter the long id returns the row of the table
-        // had to add 1 to pos to get correct record to show. No Zero in id????
-        long id = pos + 1;
-        Log.d(TAG, "id is : " + id);
+    public void onItemClick(int pos, long id) {
         Intent intent = new Intent(MainActivity.this, ScanPictureActivity.class);
         Uri currentRecyclerUri = ContentUris.withAppendedId(WALLABY_URI, id);
         intent.setData(currentRecyclerUri);
@@ -147,14 +142,14 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
 
     @Override
-    public void onButtonClick(int pos){
-        long id = pos + 1;
+    public void onButtonClick(int pos, long id){
+        // long id = pos + 1;
         Log.d(TAG, "id is : " + id);
         Intent intent = new Intent(MainActivity.this, AddEditWallabyActivity.class);
         Uri currentRecyclerUri = ContentUris.withAppendedId(WALLABY_URI, id);
         intent.setData(currentRecyclerUri);
-        //Toast.makeText(v.getContext(), "id: " + id, Toast.LENGTH_LONG).show();
-        Toast.makeText(this, "Uri: " + currentRecyclerUri, Toast.LENGTH_LONG).show();
+        //Toast.makeText(this, "pos: " + pos + " id: " + id, Toast.LENGTH_LONG).show();
+        // Toast.makeText(this, "Uri: " + currentRecyclerUri, Toast.LENGTH_LONG).show();
         startActivity(intent);
     }
 

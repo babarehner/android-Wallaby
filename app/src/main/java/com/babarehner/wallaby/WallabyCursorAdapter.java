@@ -1,22 +1,17 @@
 package com.babarehner.wallaby;
 
-import android.content.ContentUris;
+
 import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
+
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -53,12 +48,11 @@ public class WallabyCursorAdapter extends BaseCursorAdapter<WallabyCursorAdapter
     public static final String TAG = "WallabyCursorAdapter";
 
     private Context mContext;
-    private ArrayList<String> mFileNames = new ArrayList<>();
-    private Cursor mCursor;
-
-    private long mID;
 
     private RecyclerViewClickListener mListener;
+
+    private long mRowId;
+
 
 
     public WallabyCursorAdapter(RecyclerViewClickListener listener){
@@ -79,30 +73,30 @@ public class WallabyCursorAdapter extends BaseCursorAdapter<WallabyCursorAdapter
     @Override
     public void onBindViewHolder(WallabyViewHolder holder, Cursor cursor) {
 
-        int mColumnIndex_ID = cursor.getColumnIndex(WallabyContract.WallabyTableConstants._ID);
+
+        // forgot to add _ID field when doing query on DB
+        int columnIndex_ID = cursor.getColumnIndex(WallabyContract.WallabyTableConstants._ID);
         int mColumnIndexName = cursor.getColumnIndex(WallabyContract.WallabyTableConstants.C_CARD_N);
         int mColumnIndexFileName = cursor.getColumnIndex(WallabyContract.WallabyTableConstants.C_IMAGE_FN);
-        String columnIndex_ID = String.valueOf(mColumnIndex_ID);
-        //Toast.makeText(WallabyCursorAdapter.this, "mCurrentRecordUri: " + columnIndex_ID, Toast.LENGTH_LONG).show();
+
         Log.v(TAG, "Column Index :" + columnIndex_ID);
 
-        // Why does this line cause system to crash ???? Long _ID_ID = cursor.getLong(mColumnIndex_ID);
         String cardName = cursor.getString(mColumnIndexName);
         final String fileName = cursor.getString(mColumnIndexFileName);
 
+        holder.rowID = cursor.getLong(columnIndex_ID);
         holder.nameTextView.setText(cardName);
         holder.fileNameTextView.setText(fileName);
         Glide.with(mContext).load(fileName).into(holder.image);
-    }
 
+    }
 
 
     @Override
     public void swapCursor(Cursor newCursor) {
         super.swapCursor(newCursor);
     }
-
-
+    
 
     class WallabyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
@@ -113,32 +107,25 @@ public class WallabyCursorAdapter extends BaseCursorAdapter<WallabyCursorAdapter
         TextView fileNameTextView;
         ImageView image;
         Button b;
-        Long rowID;
+        long rowID;     //the primary key stored in the row
 
         WallabyViewHolder(View v, RecyclerViewClickListener listener) {
             super(v);
 
+            //mRowId = WallabyCursorAdapter.this.getItemId(getAdapterPosition());
 
             nameTextView = itemView.findViewById(R.id.graphic_name);
             fileNameTextView = itemView.findViewById(R.id.file_name);
             image = itemView.findViewById(R.id.imageView);
             b = itemView.findViewById(R.id.edit_button);
 
-            //TODO get row number (primary id) and pass it through the click listener. Position will not work when DELETE runs
-            rowID = mID;
-
-
             this.listener = listener;
-            ///this.buttonListener = buttonListener;
 
             image.setOnClickListener(this);
             b.setOnClickListener(this);
         }
 
 
-        /*
-        Seems to not work at times clicking on the image- like click not picked up/dropped???
-         */
         @Override
         public void onClick(View view) {
             switch (view.getId()){
@@ -146,7 +133,7 @@ public class WallabyCursorAdapter extends BaseCursorAdapter<WallabyCursorAdapter
                     if (listener != null){
                         int position = getAdapterPosition();
                         if (position != RecyclerView.NO_POSITION){
-                            listener.onItemClick(position);
+                            listener.onItemClick(position, rowID);
                         }
                     }
                     break;
@@ -154,7 +141,7 @@ public class WallabyCursorAdapter extends BaseCursorAdapter<WallabyCursorAdapter
                     if (listener != null){
                         int position = getAdapterPosition();
                         if (position != RecyclerView.NO_POSITION){
-                            listener.onButtonClick(position);
+                            listener.onButtonClick(position, rowID);
                         }
                     }
                     break;
@@ -168,8 +155,8 @@ public class WallabyCursorAdapter extends BaseCursorAdapter<WallabyCursorAdapter
     // Use interface- implemented in MainActivity
     public interface RecyclerViewClickListener{
 
-        void onItemClick(long pos);
-        void onButtonClick(int pos);
+        void onItemClick(int pos, long id);
+        void onButtonClick(int pos, long id);
     }
 
 }
