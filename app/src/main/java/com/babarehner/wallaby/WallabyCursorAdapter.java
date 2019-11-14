@@ -96,7 +96,7 @@ public class WallabyCursorAdapter extends BaseCursorAdapter<WallabyCursorAdapter
     public void swapCursor(Cursor newCursor) {
         super.swapCursor(newCursor);
     }
-    
+
 
     class WallabyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
