@@ -30,12 +30,13 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.app.NavUtils;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
-import androidx.fragment.app.Fragment;
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentFactory;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.CursorLoader;
 import androidx.loader.content.Loader;
 
+import com.babarehner.wallaby.DialogFragDeleteConfirmation;
 import com.bumptech.glide.Glide;
 
 import java.io.ByteArrayOutputStream;
@@ -70,7 +71,8 @@ import static com.babarehner.wallaby.data.WallabyContract.WallabyTableConstants.
  * Adds and edits items in the Wallaby database. Each item consists of a Picture and a Name
  */
 
-public class AddEditWallabyActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
+public class AddEditWallabyActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>,
+        DialogFragDeleteConfirmation.DialogDeleteListener {
 
     static final String LOG_TAG = AddEditWallabyActivity.class.getSimpleName();
 
@@ -179,6 +181,16 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
     }
 
 
+
+
+
+    @Override   // set up the menu the first time
+    public boolean onCreateOptionsMenu(Menu m) {
+        getMenuInflater().inflate(R.menu.menu_add_edit_wallaby_activity, m);
+        return true;
+    }
+
+
     @Override   // hide delete/share menu items when adding a new exercise
     public boolean onPrepareOptionsMenu(Menu m) {
         super.onPrepareOptionsMenu(m);
@@ -192,13 +204,6 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
     }
 
 
-    @Override   // set up the menu the first time
-    public boolean onCreateOptionsMenu(Menu m) {
-        getMenuInflater().inflate(R.menu.menu_add_edit_wallaby_activity, m);
-        return true;
-    }
-
-
     @Override        // Select from the options menu
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -208,8 +213,7 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
                 return true;
             case R.id.action_delete:
                 // Alert Dialog for deleting one record
-                // showDeleteConfirmationDialog();
-                //showDeleteConfirmationDialogFrag(); implement this one
+                showDeleteConfirmationDialogFrag();
                 return true;
             // this is the <- button on the header
             case android.R.id.home:
@@ -365,5 +369,36 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
     public static Bitmap getBitmapFromByte(byte[] image) {
         return BitmapFactory.decodeByteArray(image, 0, image.length);
     }
+
+    private void showDeleteConfirmationDialogFrag() {
+        DialogFragment df = new DialogFragDeleteConfirmation();
+        df.show(getSupportFragmentManager(), "Delete Record");
+        //deleteRecord();
+    }
+
+     public void onDeleteClick(){
+         //TODO Also need to delete jpg file stored in folder
+         //TODO This should be done before filename removed from DB
+        deleteRecord();
+
+    }
+
+    // delete Record from DB
+    public void deleteRecord(){
+        if (mCurrentRecordUri != null) {
+            int rowsDeleted = getContentResolver().delete(mCurrentRecordUri, null, null);
+            //TODO need to also delete the file that the filename in the db points to!!
+            if (rowsDeleted == 0) {
+                Toast.makeText(this, getString(R.string.delete_record_failure),
+                        Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, getString(R.string.delete_record_success),
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+        finish();
+    }
+
+
 
 }

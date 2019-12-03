@@ -11,6 +11,13 @@
     <string name="insert_record_succeeded">Insert record succeeded</string>
     <string name="edit_update_record_failed">Update record failed</string>
     <string name="edit_update_record_success">Update record succeeded</string>
+    <string name="delete_record_failure">Record delete failed</string>
+    <string name="delete_record_success">Record delete succeeded</string>
+
+    <!-- DialogFragmentDeleteConfirmation.java -->
+    <string name="delete_dialog_msg">Delete this record</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
 
 
 </resources>
