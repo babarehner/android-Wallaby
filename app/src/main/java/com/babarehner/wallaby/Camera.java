@@ -73,6 +73,7 @@ public class Camera extends Fragment {
         this.activity = activity;
     }
 
+
     public Button checkPermission(Button takePictureButton){
         mTakePictureButton = takePictureButton;
         checkCameraPermission();
@@ -95,21 +96,30 @@ public class Camera extends Fragment {
 
     }
 
-    /*
-    // The onRequestPermissionsResult is called on the activity and not the fragement
-    // @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        // super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == 0) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                mTakePictureButton.setEnabled(true);
-            } else {
-                Toast.makeText(context, "Camera permission not granted. Unable to take Picture.", Toast.LENGTH_LONG).show();
+    // actally take the picture
+    private void dispatchTakePictureIntent() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        // Ensure that there's a camera activity to handle the event
+        Log.v("starting dispatchTake ", LOG_TAG);
+        if (takePictureIntent.resolveActivity(activity.getPackageManager()) != null) {
+            // Create the filew where the photo should go
+            photoFile = null;
+            try {
+                photoFile = createImageFile();
+                Log.v("photoFile: ", photoFile.toString());
+            } catch (IOException ex) {
+                // Error occurred while creating file
+                ex.printStackTrace();
+                Log.v("IO exception: :", LOG_TAG);
             }
+            // Continue if the file was succesfully created
+            mPhotoUri = FileProvider.getUriForFile(context, "com.babarehner.wallaby.fileprovider", photoFile);
+            Log.v("Uri:", mPhotoUri.toString());
+            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, mPhotoUri);
+            // launch camera activity to take the photo
+            activity.startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
         }
     }
-    */
-
 
 
     // create a new file name
@@ -134,37 +144,28 @@ public class Camera extends Fragment {
         return imageFile;
     }
 
-
-    private void dispatchTakePictureIntent() {
-        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        // Ensure that there's a camera activity to handle the event
-        Log.v("starting dispatchTake ", LOG_TAG);
-        if (takePictureIntent.resolveActivity(activity.getPackageManager()) != null) {
-            // Create the filew where the photo should go
-            photoFile = null;
-            try {
-                photoFile = createImageFile();
-                Log.v("photoFile: ", photoFile.toString());
-            } catch (IOException ex) {
-                // Error occurred while creating file
-                ex.printStackTrace();
-                Log.v("IO exception: :", LOG_TAG);
-            }
-            // Continue if the file was succesfully created
-            mPhotoUri = FileProvider.getUriForFile(context, "com.babarehner.wallaby.fileprovider", photoFile);
-            Log.v("Uri:", mPhotoUri.toString());
-            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, mPhotoUri);
-            activity.startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-        }
-    }
-
-
-    // return the phot absoluth path
+    // return the photo absolute path
     public String getCurrentPhotoPath(){
         return currentPhotoPath;
     }
 
     public String getFileName() { return photoFile.toString();}
+
+
+    /*
+    // The onRequestPermissionsResult is called on the activity and not the fragement
+    // @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        // super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 0) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                mTakePictureButton.setEnabled(true);
+            } else {
+                Toast.makeText(context, "Camera permission not granted. Unable to take Picture.", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+    */
 
 
     /*

@@ -181,9 +181,6 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
     }
 
 
-
-
-
     @Override   // set up the menu the first time
     public boolean onCreateOptionsMenu(Menu m) {
         getMenuInflater().inflate(R.menu.menu_add_edit_wallaby_activity, m);
@@ -295,7 +292,7 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
             mTakePictureButton.setEnabled(false);
         } else {
             mTakePictureButton.setEnabled(true);  // make sure the TakePicture Button is enabled
-            // set up Camera to take picture
+            // create instance of  Camera to take picture
             Camera myCamera = new Camera(this, this);
             mPhotoUri = myCamera.takePicture(mImageView);
             mCurrentPhotoPath = myCamera.getCurrentPhotoPath();
@@ -304,7 +301,7 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
     }
 
 
-    // onActivityResult called in Fragment Camera
+    // onActivityResult called in Activity Camera
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -380,7 +377,6 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
          //TODO Also need to delete jpg file stored in folder
          //TODO This should be done before filename removed from DB
         deleteRecord();
-
     }
 
     // delete Record from DB
@@ -397,6 +393,12 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
             }
         }
         finish();
+    }
+
+    private void showEditConfirmationDialogFrag() {
+        DialogFragment df = new DialogFragEditConfirmation();
+        // update record
+        df.show(getSupportFragmentManager(), "Update Record");
     }
 
 
