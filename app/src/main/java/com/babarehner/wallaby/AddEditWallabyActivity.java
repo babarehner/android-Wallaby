@@ -72,7 +72,7 @@ import static com.babarehner.wallaby.data.WallabyContract.WallabyTableConstants.
  */
 
 public class AddEditWallabyActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>,
-        DialogFragDeleteConfirmation.DialogDeleteListener {
+        DialogFragDeleteConfirmation.DialogDeleteListener, DialogFragUnsavedChanges.DialogClickListener {
 
     static final String LOG_TAG = AddEditWallabyActivity.class.getSimpleName();
 
@@ -220,7 +220,7 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
                     return true;
                 }
                 mHomeChecked = true;
-                // showUnsavedChangesDialogFragment(); implement this one
+                showUnsavedChangesDialogFrag();
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -395,11 +395,23 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
         finish();
     }
 
-    private void showEditConfirmationDialogFrag() {
-        DialogFragment df = new DialogFragEditConfirmation();
+
+    private void showUnsavedChangesDialogFrag() {
+        DialogFragment dfus = new DialogFragUnsavedChanges();
         // update record
-        df.show(getSupportFragmentManager(), "Update Record");
+        dfus.show(getSupportFragmentManager(), "Unsaved Changes Dialog Fragement");
     }
+
+    public void onDiscardClick() {
+        //user click discard. Navigate up to parent activity
+        if (mHomeChecked){  // at Home Checkmark
+            NavUtils.navigateUpFromSameTask(AddEditWallabyActivity.this);
+        }
+        if (!mHomeChecked) { // at BackPressed
+            finish();
+        }
+    }
+
 
 
 

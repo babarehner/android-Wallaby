@@ -1,12 +1,12 @@
 package com.babarehner.wallaby;
 
-import android.content.Context;
-import android.content.DialogInterface;
-import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
+import androidx.appcompat.app.AlertDialog;
+import android.content.Context;
+import android.os.Bundle;
+import androidx.annotation.NonNull;
+
+
 
 /**
  * Project Name: Wallaby
@@ -27,12 +27,11 @@ import androidx.fragment.app.DialogFragment;
  */
 
 
-class DialogFragEditConfirmation extends DialogFragment {
+public class DialogFragUnsavedChanges extends DialogFragment {
 
-    public DialogFragEditConfirmation() {}
+    public DialogFragUnsavedChanges() { }
 
-    public DialogFragEditConfirmation.DialogEditListener callBack;
-
+    public DialogClickListener callBack;
 
     @NonNull
     @Override
@@ -42,18 +41,10 @@ class DialogFragEditConfirmation extends DialogFragment {
         // b.setMessage("hi");
         b.setMessage(R.string.unsaved_changes_dialog_msg);
 
-        b.setPositiveButton(R.string.discard, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                callBack.onEditClick();
-            }
+        b.setPositiveButton(R.string.discard, (dialog, which) -> callBack.onDiscardClick());
+        b.setNegativeButton(R.string.keep_editing, (dialog, which) -> {
+            if (dialog != null) { dialog.dismiss();}
         });
-        b.setNegativeButton(R.string.keep_editing, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                if (dialog != null) { dialog.dismiss();}
-            }
-        });
-
         // Create the AlertDialog object and return it
         return b.create();
     }
@@ -70,7 +61,7 @@ class DialogFragEditConfirmation extends DialogFragment {
         // Verify that the host activity implements the callback interface
         try {
             // Instantiate the NoticeDialogListener so we can send events to the host
-            callBack = (DialogFragEditConfirmation.DialogEditListener) context;
+            callBack = (DialogClickListener) context;
         } catch (ClassCastException e) {
             // The activity doesn't implement the interface, throw exception
             throw new ClassCastException(context.toString()
@@ -79,8 +70,8 @@ class DialogFragEditConfirmation extends DialogFragment {
     }
 
 
-    public interface DialogEditListener {
-        void onEditClick();
+    public interface DialogClickListener {
+        void onDiscardClick();
     }
 
 
