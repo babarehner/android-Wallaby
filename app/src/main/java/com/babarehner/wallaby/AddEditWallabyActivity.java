@@ -167,6 +167,8 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
             byte[] thumbNail = c.getBlob(thumbNailIndex);
 
             mEditTextCard.setText(cardName);
+            // TODO get class variables to store bitmap in
+            mImageViewFileName = fileName;
             //TODO get the file and set it to mImageView
             Bitmap bitmapThumbNail = getBitmapFromByte(thumbNail);
             mImageThmbNail.setImageBitmap(bitmapThumbNail);
@@ -296,7 +298,7 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
             Camera myCamera = new Camera(this, this);
             mPhotoUri = myCamera.takePicture(mImageView);
             mCurrentPhotoPath = myCamera.getCurrentPhotoPath();
-            mImageViewFileName = myCamera.getFileName();
+            mImageViewFileName = (myCamera.getFileName());
         }
     }
 

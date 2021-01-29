@@ -163,6 +163,7 @@ public class WallabyProvider extends ContentProvider {
     @Override
     public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {
         final int match = sUriMatcher.match(uri);
+
         switch (match) {
             case WALLABIES:
                 return updateRecords(uri, values, selection, selectionArgs);
@@ -176,10 +177,9 @@ public class WallabyProvider extends ContentProvider {
     }
 
 
-
     private int updateRecords(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {
         // if there are no values quit
-        if ( values == null || values.size() == 0) {
+        if ( values.size() == 0) {
             return 0;
         }
 
