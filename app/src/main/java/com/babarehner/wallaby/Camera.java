@@ -113,6 +113,7 @@ public class Camera extends Fragment {
                 Log.v("IO exception: :", LOG_TAG);
             }
             // Continue if the file was succesfully created
+            mPhotoUri = null;
             mPhotoUri = FileProvider.getUriForFile(context, "com.babarehner.wallaby.fileprovider", photoFile);
             Log.v("Uri:", mPhotoUri.toString());
             takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, mPhotoUri);

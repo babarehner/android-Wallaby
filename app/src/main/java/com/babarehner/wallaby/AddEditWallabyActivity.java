@@ -143,6 +143,9 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
         mTakePictureButton = findViewById((R.id.button_image));
 
         mEditTextCard.setOnTouchListener(mTouchListener);
+        mImageView.setOnTouchListener((mTouchListener));
+        mImageThmbNail.setOnTouchListener(mTouchListener);
+
     }
 
 
@@ -171,13 +174,12 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
             // TODO get class variables to store bitmap in
             mImageViewFileName = fileName;
             Context context = AddEditWallabyActivity.this; // Redundant but makes clear how to get context of activity
-            Glide.with(context).load(new File(fileName)).into(mImageView);
+            Glide.with(context).load(fileName).into(mImageView);
 
             Bitmap bitmapThumbNail = getBitmapFromByte(thumbNail);
             mImageThmbNail.setImageBitmap(bitmapThumbNail);
             // AM I LOADING THE THUMBNAIL AS A LARGER IMAGE??????????
             // TRY SETTING THUMBNAIL SIZE!!!!!!!!!
-            //mImageThmbNail.setImageBitmap(GImageDebug.bm);
 
         }
     }
@@ -256,14 +258,18 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
 
         String strCardName = mEditTextCard.getText().toString().trim();
         String strFileName = mImageViewFileName;
-        mImageView.setDrawingCacheEnabled(true);
-        Bitmap bmap = mImageView.getDrawingCache();
+        //mImageView.setDrawingCacheEnabled(true);
+       // mImageThmbNail.setDrawingCacheEnabled(true);
+        //Bitmap bmap = mImageThmbNail.getDrawingCache();
         //byte[] bThumbNail = getPictureByteOfArray(bmap);
-        byte[] bThumbNail = getBytes(bmap);
+        Context context = AddEditWallabyActivity.this; // Redundant but makes clear how to get context of activity
+        Glide.with(context).load(mCurrentPhotoPath).into(mImageView);
+        Bitmap thumbImage = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(mCurrentPhotoPath), THUMBSIZE, THUMBSIZE);
+        byte[] bThumbNail = getBytes(thumbImage);
 
         ContentValues values = new ContentValues();
         values.put(C_CARD_N, strCardName);
-        values.put(C_IMAGE_FN, strFileName);
+        values.put(C_IMAGE_FN, mCurrentPhotoPath);
         values.put(C_THMB_NAIL, bThumbNail);
 
         if (mCurrentRecordUri == null) {
@@ -297,6 +303,13 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
 
     // Button calls this in resource file
     public void takePicture(View v) {
+        // Remove the pictures from the edit page. This seems to work
+        if (mCurrentRecordUri != null){
+            mImageView.setImageResource(android.R.color.transparent);
+            mImageThmbNail.setImageResource(android.R.color.transparent);
+            mImageView.invalidate();
+            mImageThmbNail.invalidate();
+        }
         if (!checkCameraPermission()){
             Log.v("takePictureView ", LOG_TAG);
             mTakePictureButton.setEnabled(false);
@@ -304,8 +317,11 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
             mTakePictureButton.setEnabled(true);  // make sure the TakePicture Button is enabled
             // create instance of  Camera to take picture
             Camera myCamera = new Camera(this, this);
+            mPhotoUri = null;
             mPhotoUri = myCamera.takePicture(mImageView);
+            mCurrentPhotoPath = "";
             mCurrentPhotoPath = myCamera.getCurrentPhotoPath();
+            mImageViewFileName = "";
             mImageViewFileName = myCamera.getFileName();
         }
     }
@@ -318,7 +334,9 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK){
             // mImageView.setImageURI(mPhotoUri);
             Context context = AddEditWallabyActivity.this; // Redundant but makes clear how to get context of activity
-            Glide.with(context).load(mPhotoUri).into(mImageView);
+            //Glide.with(context).load(mPhotoUri).into(mImageView);
+            Glide.with(context).load(mCurrentPhotoPath).into(mImageView);
+
         } else {
             if (resultCode == RESULT_CANCELED){
                 // user cancelled the image capture
@@ -328,7 +346,6 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
         // Get the thumbnail image
         Bitmap thumbImage = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(mCurrentPhotoPath), THUMBSIZE, THUMBSIZE);
         mImageThmbNail.setImageBitmap(thumbImage);
-        // GImageDebug.bm = thumbImage;
     }
 
 
