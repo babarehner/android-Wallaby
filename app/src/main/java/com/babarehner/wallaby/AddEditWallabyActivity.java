@@ -98,6 +98,7 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
     private String mCurrentPhotoPath;
 
     private Uri mPhotoUri;
+    private Uri mDBPhotoUri;
 
     private static final String PATH = "images/";
 
@@ -169,9 +170,15 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
             mEditTextCard.setText(cardName);
             // TODO get class variables to store bitmap in
             mImageViewFileName = fileName;
-            //TODO get the file and set it to mImageView
+            Context context = AddEditWallabyActivity.this; // Redundant but makes clear how to get context of activity
+            Glide.with(context).load(new File(fileName)).into(mImageView);
+
             Bitmap bitmapThumbNail = getBitmapFromByte(thumbNail);
             mImageThmbNail.setImageBitmap(bitmapThumbNail);
+            // AM I LOADING THE THUMBNAIL AS A LARGER IMAGE??????????
+            // TRY SETTING THUMBNAIL SIZE!!!!!!!!!
+            //mImageThmbNail.setImageBitmap(GImageDebug.bm);
+
         }
     }
 
@@ -251,7 +258,8 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
         String strFileName = mImageViewFileName;
         mImageView.setDrawingCacheEnabled(true);
         Bitmap bmap = mImageView.getDrawingCache();
-        byte[] bThumbNail = getPictureByteOfArray(bmap);
+        //byte[] bThumbNail = getPictureByteOfArray(bmap);
+        byte[] bThumbNail = getBytes(bmap);
 
         ContentValues values = new ContentValues();
         values.put(C_CARD_N, strCardName);
@@ -298,7 +306,7 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
             Camera myCamera = new Camera(this, this);
             mPhotoUri = myCamera.takePicture(mImageView);
             mCurrentPhotoPath = myCamera.getCurrentPhotoPath();
-            mImageViewFileName = (myCamera.getFileName());
+            mImageViewFileName = myCamera.getFileName();
         }
     }
 
@@ -320,6 +328,7 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
         // Get the thumbnail image
         Bitmap thumbImage = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(mCurrentPhotoPath), THUMBSIZE, THUMBSIZE);
         mImageThmbNail.setImageBitmap(thumbImage);
+        // GImageDebug.bm = thumbImage;
     }
 
 
@@ -412,6 +421,18 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
         if (!mHomeChecked) { // at BackPressed
             finish();
         }
+    }
+
+    // convert from bitmap to byte array
+    public static byte[] getBytes(Bitmap bitmap) {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 0, stream);
+        return stream.toByteArray();
+    }
+
+    // convert from byte array to bitmap
+    public static Bitmap getImage(byte[] image) {
+        return BitmapFactory.decodeByteArray(image, 0, image.length);
     }
 
 
