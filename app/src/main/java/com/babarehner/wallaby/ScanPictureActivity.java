@@ -21,7 +21,6 @@ import androidx.loader.content.Loader;
 import com.babarehner.wallaby.data.WallabyContract;
 import com.bumptech.glide.Glide;
 
-import static com.babarehner.wallaby.AddEditWallabyActivity.getBitmapFromByte;
 import static com.babarehner.wallaby.data.WallabyContract.WallabyTableConstants.C_CARD_N;
 import static com.babarehner.wallaby.data.WallabyContract.WallabyTableConstants.C_IMAGE_FN;
 import static com.babarehner.wallaby.data.WallabyContract.WallabyTableConstants.C_THMB_NAIL;

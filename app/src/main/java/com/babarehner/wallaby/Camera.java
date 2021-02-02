@@ -49,7 +49,7 @@ import static com.babarehner.wallaby.AddEditWallabyActivity.REQUEST_IMAGE_CAPTUR
 
 public class Camera extends Fragment {
 
-    static final String LOG_TAG = AddEditWallabyActivity.class.getSimpleName();
+    static final String LOG_TAG = Camera.class.getSimpleName();
 
     //static final int REQUEST_IMAGE_CAPTURE = 100;
 
@@ -104,6 +104,7 @@ public class Camera extends Fragment {
         if (takePictureIntent.resolveActivity(activity.getPackageManager()) != null) {
             // Create the filew where the photo should go
             photoFile = null;
+            // File photoFile = null;
             try {
                 photoFile = createImageFile();
                 Log.v("photoFile: ", photoFile.toString());
@@ -113,8 +114,10 @@ public class Camera extends Fragment {
                 Log.v("IO exception: :", LOG_TAG);
             }
             // Continue if the file was succesfully created
+            //mPhotoUri can be local
             mPhotoUri = null;
-            mPhotoUri = FileProvider.getUriForFile(context, "com.babarehner.wallaby.fileprovider", photoFile);
+            mPhotoUri = FileProvider.getUriForFile( context,
+                    "com.babarehner.wallaby.fileprovider", photoFile);
             Log.v("Uri:", mPhotoUri.toString());
             takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, mPhotoUri);
             // launch camera activity to take the photo

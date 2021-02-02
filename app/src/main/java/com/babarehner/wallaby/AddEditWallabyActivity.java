@@ -12,6 +12,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Menu;
@@ -45,6 +46,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import static com.babarehner.wallaby.Utility.getBitmap;
 import static com.babarehner.wallaby.data.WallabyContract.WallabyTableConstants.C_CARD_N;
 import static com.babarehner.wallaby.data.WallabyContract.WallabyTableConstants.C_IMAGE_FN;
 import static com.babarehner.wallaby.data.WallabyContract.WallabyTableConstants.C_THMB_NAIL;
@@ -96,6 +98,7 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
     public static final int REQUEST_CAMERA_PERMISSION = 0;
 
     private String mCurrentPhotoPath;
+    private EditText mEditTextPhotoPath;
 
     private Uri mPhotoUri;
     private Uri mDBPhotoUri;
@@ -104,6 +107,23 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
 
     private boolean mRecordChanged = false;
     private boolean mHomeChecked;
+
+    // Obtain MotionEvent object
+    long downTime = SystemClock.uptimeMillis();
+    long eventTime = SystemClock.uptimeMillis() + 100;
+    float x = 0.0f;
+    float y = 0.0f;
+    // List of meta states found here:     developer.android.com/reference/android/view/KeyEvent.html#getMetaState()
+    int metaState = 0;
+    MotionEvent motionEvent = MotionEvent.obtain(
+            downTime,
+            eventTime,
+            MotionEvent.ACTION_UP,
+            x,
+            y,
+            metaState
+    );
+
 
 
     // Touch Listener to check if changes made to a book
@@ -120,7 +140,7 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
     };
 
 
-    protected void onCreate(Bundle savedInstanceState){
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_edit_wallaby);
 
@@ -131,20 +151,24 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
             // set pager header to add record
             setTitle(getString(R.string.add_record));
         } else {
-            setTitle( "Edit Record");
+            setTitle("Edit Record");
             //getLoaderManager().initLoader(EXISTING_ADD_EDIT_WALLABY_LOADER, null, this);
-            LoaderManager.getInstance(AddEditWallabyActivity.this).initLoader(EXISTING_ADD_EDIT_WALLABY_LOADER, null, AddEditWallabyActivity.this);
+            LoaderManager.getInstance(AddEditWallabyActivity.this).initLoader(
+                    EXISTING_ADD_EDIT_WALLABY_LOADER, null, AddEditWallabyActivity.this);
             Toast.makeText(this, "mCurrentRecordUri: " + mCurrentRecordUri, Toast.LENGTH_LONG).show();
         }
 
-        mEditTextCard =  findViewById(R.id.edit_card);
+        mEditTextCard = findViewById(R.id.edit_card);
         mImageView = findViewById(R.id.imageView);
         mImageThmbNail = findViewById(R.id.imageThmbNail);
         mTakePictureButton = findViewById((R.id.button_image));
 
+
         mEditTextCard.setOnTouchListener(mTouchListener);
         mImageView.setOnTouchListener((mTouchListener));
         mImageThmbNail.setOnTouchListener(mTouchListener);
+        // TODO When the button clicked remove old pics and then store new pics
+        mTakePictureButton.setOnTouchListener(mTouchListener);
 
     }
 
@@ -176,7 +200,7 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
             Context context = AddEditWallabyActivity.this; // Redundant but makes clear how to get context of activity
             Glide.with(context).load(fileName).into(mImageView);
 
-            Bitmap bitmapThumbNail = getBitmapFromByte(thumbNail);
+            Bitmap bitmapThumbNail = Utility.getBitmap(thumbNail);
             mImageThmbNail.setImageBitmap(bitmapThumbNail);
             // AM I LOADING THE THUMBNAIL AS A LARGER IMAGE??????????
             // TRY SETTING THUMBNAIL SIZE!!!!!!!!!
@@ -187,8 +211,12 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
 
     @Override
     public void onLoaderReset(@NonNull Loader<Cursor> loader) {
+        // if invalid loader clear data from input field
         mEditTextCard.setText("");
-
+        mImageView.setImageResource(android.R.color.transparent);
+        mImageThmbNail.setImageResource(android.R.color.transparent);
+        mImageView.invalidate();
+        mImageThmbNail.invalidate();
     }
 
 
@@ -253,27 +281,25 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
     }
 
 
-
-    private void saveRecord(){
+    private void saveRecord() {
 
         String strCardName = mEditTextCard.getText().toString().trim();
-        String strFileName = mImageViewFileName;
+        String strFileName = mCurrentPhotoPath;
         //mImageView.setDrawingCacheEnabled(true);
-       // mImageThmbNail.setDrawingCacheEnabled(true);
-        //Bitmap bmap = mImageThmbNail.getDrawingCache();
-        //byte[] bThumbNail = getPictureByteOfArray(bmap);
-        Context context = AddEditWallabyActivity.this; // Redundant but makes clear how to get context of activity
-        Glide.with(context).load(mCurrentPhotoPath).into(mImageView);
-        Bitmap thumbImage = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(mCurrentPhotoPath), THUMBSIZE, THUMBSIZE);
-        byte[] bThumbNail = getBytes(thumbImage);
+        // get the bitmap out of the mImageThmbnail
+        Bitmap bmap = ((BitmapDrawable) mImageThmbNail.getDrawable()).getBitmap();
+        byte[] bThumbNail = Utility.getBytes(bmap);
+        // Context context = AddEditWallabyActivity.this; // Redundant but makes clear how to get
+        // context of activity
+        // Glide.with(context).load(mCurrentPhotoPath).into(mImageView);
 
         ContentValues values = new ContentValues();
         values.put(C_CARD_N, strCardName);
-        values.put(C_IMAGE_FN, mCurrentPhotoPath);
+        values.put(C_IMAGE_FN, strFileName);
         values.put(C_THMB_NAIL, bThumbNail);
 
         if (mCurrentRecordUri == null) {
-            Log.v(LOG_TAG, "in saveRecord " + WALLABY_URI.toString() + "\n\n\n\n\n\n\n" );
+            Log.v(LOG_TAG, "in saveRecord " + WALLABY_URI.toString() + "\n\n\n\n\n\n\n");
             Uri newUri = getContentResolver().insert(WALLABY_URI, values);
             if (newUri == null) {
                 Toast.makeText(this, getString(R.string.insert_record_failed),
@@ -295,50 +321,54 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
                         Toast.LENGTH_LONG).show();
             }
         }
-
     }
-
-
 
 
     // Button calls this in resource file
     public void takePicture(View v) {
         // Remove the pictures from the edit page. This seems to work
         if (mCurrentRecordUri != null){
+            // erases pictures
             mImageView.setImageResource(android.R.color.transparent);
             mImageThmbNail.setImageResource(android.R.color.transparent);
             mImageView.invalidate();
             mImageThmbNail.invalidate();
+            mPhotoUri = null;
+            mCurrentPhotoPath = "";
+            mImageViewFileName = "";
+            //Required to trigger update Fragment
+            mImageThmbNail.dispatchTouchEvent(motionEvent);
+            mImageView.dispatchTouchEvent(motionEvent);
         }
-        if (!checkCameraPermission()){
+
+        if (!checkCameraPermission()) {
             Log.v("takePictureView ", LOG_TAG);
             mTakePictureButton.setEnabled(false);
         } else {
             mTakePictureButton.setEnabled(true);  // make sure the TakePicture Button is enabled
             // create instance of  Camera to take picture
             Camera myCamera = new Camera(this, this);
-            mPhotoUri = null;
             mPhotoUri = myCamera.takePicture(mImageView);
-            mCurrentPhotoPath = "";
             mCurrentPhotoPath = myCamera.getCurrentPhotoPath();
-            mImageViewFileName = "";
             mImageViewFileName = myCamera.getFileName();
+            // Following 2 lines don't bring the image
+            Context context = AddEditWallabyActivity.this;
+            Glide.with(context).load(mCurrentPhotoPath).into(mImageView);
         }
     }
 
 
-    // onActivityResult called in Activity Camera
+    // onActivityResult called in Fragment Camera
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK){
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
             // mImageView.setImageURI(mPhotoUri);
-            Context context = AddEditWallabyActivity.this; // Redundant but makes clear how to get context of activity
+            Context context = this; // or AddEditWallabyActivity.this; - redundant way
             //Glide.with(context).load(mPhotoUri).into(mImageView);
             Glide.with(context).load(mCurrentPhotoPath).into(mImageView);
-
         } else {
-            if (resultCode == RESULT_CANCELED){
+            if (resultCode == RESULT_CANCELED) {
                 // user cancelled the image capture
                 //TODO delete file path from the DB
             }
@@ -346,6 +376,8 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
         // Get the thumbnail image
         Bitmap thumbImage = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(mCurrentPhotoPath), THUMBSIZE, THUMBSIZE);
         mImageThmbNail.setImageBitmap(thumbImage);
+
+
     }
 
 
@@ -359,20 +391,18 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
         }
     }
 
-    //TODO update record
-
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         // super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        Log.v( "grantResults", Integer.toString(grantResults[0]));
-        Log.v( "requestCode", Integer.toString(requestCode));
+        Log.v("grantResults", Integer.toString(grantResults[0]));
+        Log.v("requestCode", Integer.toString(requestCode));
         if (requestCode == REQUEST_CAMERA_PERMISSION) {
-            if (grantResults.length <= 0){
-                Log.i (LOG_TAG, "User interaction was cancelled") ;
+            if (grantResults.length <= 0) {
+                Log.i(LOG_TAG, "User interaction was cancelled");
                 mTakePictureButton.setEnabled(true);
             } else if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Log.v( "serendipity", Integer.toString(grantResults[0]));
+                Log.v("serendipity", Integer.toString(grantResults[0]));
                 mTakePictureButton.setEnabled(true);
                 Toast.makeText(getApplicationContext(), "Camera permission granted, click on 'Take Picture' button ", Toast.LENGTH_LONG).show();
             } else {
@@ -382,18 +412,6 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
         }
     }
 
-
-    // Convert the image to byte array in order to store a blob image
-    public static byte[] getPictureByteOfArray(Bitmap bitmap) {
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 0, byteArrayOutputStream);
-        return byteArrayOutputStream.toByteArray();
-    }
-
-    // Convert byte array to bitmap image
-    public static Bitmap getBitmapFromByte(byte[] image) {
-        return BitmapFactory.decodeByteArray(image, 0, image.length);
-    }
 
     private void showDeleteConfirmationDialogFrag() {
         DialogFragment df = new DialogFragDeleteConfirmation();
@@ -440,17 +458,6 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
         }
     }
 
-    // convert from bitmap to byte array
-    public static byte[] getBytes(Bitmap bitmap) {
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 0, stream);
-        return stream.toByteArray();
-    }
-
-    // convert from byte array to bitmap
-    public static Bitmap getImage(byte[] image) {
-        return BitmapFactory.decodeByteArray(image, 0, image.length);
-    }
 
 
 
