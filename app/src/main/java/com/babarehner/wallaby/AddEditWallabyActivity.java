@@ -93,7 +93,7 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
 
     private static final int REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
 
-    public static final int REQUEST_IMAGE_CAPTURE = 100;
+    // public static final int REQUEST_IMAGE_CAPTURE = 100;
 
     public static final int REQUEST_CAMERA_PERMISSION = 0;
 
@@ -199,11 +199,9 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
             mImageViewFileName = fileName;
             Context context = AddEditWallabyActivity.this; // Redundant but makes clear how to get context of activity
             Glide.with(context).load(fileName).into(mImageView);
-
+            //Glide.with(context).load(fileName).override(200,200).into(mImageThmbNail);
             Bitmap bitmapThumbNail = Utility.getBitmap(thumbNail);
             mImageThmbNail.setImageBitmap(bitmapThumbNail);
-            // AM I LOADING THE THUMBNAIL AS A LARGER IMAGE??????????
-            // TRY SETTING THUMBNAIL SIZE!!!!!!!!!
 
         }
     }
@@ -285,13 +283,11 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
 
         String strCardName = mEditTextCard.getText().toString().trim();
         String strFileName = mCurrentPhotoPath;
+        // String strFileName = mImageViewFileName;
         //mImageView.setDrawingCacheEnabled(true);
         // get the bitmap out of the mImageThmbnail
         Bitmap bmap = ((BitmapDrawable) mImageThmbNail.getDrawable()).getBitmap();
         byte[] bThumbNail = Utility.getBytes(bmap);
-        // Context context = AddEditWallabyActivity.this; // Redundant but makes clear how to get
-        // context of activity
-        // Glide.with(context).load(mCurrentPhotoPath).into(mImageView);
 
         ContentValues values = new ContentValues();
         values.put(C_CARD_N, strCardName);
@@ -324,7 +320,10 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
     }
 
 
-    // Button calls this in resource file
+
+
+
+    // ButtonView calls this when clicked
     public void takePicture(View v) {
         // Remove the pictures from the edit page. This seems to work
         if (mCurrentRecordUri != null){
@@ -337,80 +336,84 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
             mCurrentPhotoPath = "";
             mImageViewFileName = "";
             //Required to trigger update Fragment
-            mImageThmbNail.dispatchTouchEvent(motionEvent);
-            mImageView.dispatchTouchEvent(motionEvent);
+            //mageThmbNail.dispatchTouchEvent(motionEvent);
+            //mageView.dispatchTouchEvent(motionEvent);
         }
+        Context context = AddEditWallabyActivity.this;
+        Photo myPhoto = new Photo(context, this);
+        mPhotoUri = myPhoto.takePicture();
+        mCurrentPhotoPath = myPhoto.getCurrentPhotoPath();
 
-        if (!checkCameraPermission()) {
-            Log.v("takePictureView ", LOG_TAG);
-            mTakePictureButton.setEnabled(false);
-        } else {
-            mTakePictureButton.setEnabled(true);  // make sure the TakePicture Button is enabled
-            // create instance of  Camera to take picture
-            Camera myCamera = new Camera(this, this);
-            mPhotoUri = myCamera.takePicture(mImageView);
-            mCurrentPhotoPath = myCamera.getCurrentPhotoPath();
-            mImageViewFileName = myCamera.getFileName();
-            // Following 2 lines don't bring the image
-            Context context = AddEditWallabyActivity.this;
-            Glide.with(context).load(mCurrentPhotoPath).into(mImageView);
-        }
-    }
-
-
-    // onActivityResult called in Fragment Camera
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            // mImageView.setImageURI(mPhotoUri);
-            Context context = this; // or AddEditWallabyActivity.this; - redundant way
-            //Glide.with(context).load(mPhotoUri).into(mImageView);
-            Glide.with(context).load(mCurrentPhotoPath).into(mImageView);
-        } else {
-            if (resultCode == RESULT_CANCELED) {
-                // user cancelled the image capture
-                //TODO delete file path from the DB
-            }
-        }
+        Glide.with(context).load(mCurrentPhotoPath).override(200,200).into(mImageThmbNail);
+        Log.d(LOG_TAG, "1st camera load");
+        //mImageViewFileName = myPhoto.getFileName();
+        // Following 2 lines don't bring the image
         // Get the thumbnail image
-        Bitmap thumbImage = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(mCurrentPhotoPath), THUMBSIZE, THUMBSIZE);
-        mImageThmbNail.setImageBitmap(thumbImage);
+        //Bitmap thumbImage = ThumbnailUtils.extractThumbnail(myPhoto.getImageBitmap(),THUMBSIZE,
+        //        THUMBSIZE);
+//        try {
+//            Bitmap thumbImage =
+//                    ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(mCurrentPhotoPath),
+//                            THUMBSIZE, THUMBSIZE);
+//            mImageThmbNail.setImageBitmap(thumbImage);
+//        } catch (Exception e) {
+//            Log.e(LOG_TAG, "Unable to create bitmap image");
+//        }
 
-
+        Glide.with(context).load(mCurrentPhotoPath).into(mImageView);
+        Log.d(LOG_TAG, "2nd camera load");
     }
 
 
-    public boolean checkCameraPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA},
-                    REQUEST_CAMERA_PERMISSION);
-            return false;
-        } else {
-            return true;
-        }
-    }
-
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        // super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        Log.v("grantResults", Integer.toString(grantResults[0]));
-        Log.v("requestCode", Integer.toString(requestCode));
-        if (requestCode == REQUEST_CAMERA_PERMISSION) {
-            if (grantResults.length <= 0) {
-                Log.i(LOG_TAG, "User interaction was cancelled");
-                mTakePictureButton.setEnabled(true);
-            } else if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Log.v("serendipity", Integer.toString(grantResults[0]));
-                mTakePictureButton.setEnabled(true);
-                Toast.makeText(getApplicationContext(), "Camera permission granted, click on 'Take Picture' button ", Toast.LENGTH_LONG).show();
-            } else {
-                mTakePictureButton.setEnabled(false);
-                Toast.makeText(getApplicationContext(), "Camera permission not granted. Unable to take picture unless Permission given.", Toast.LENGTH_LONG).show();
-            }
-        }
-    }
+//    // onActivityResult called in Fragment Camera
+//    @Override
+//    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        super.onActivityResult(requestCode, resultCode, data);
+//        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+//            // mImageView.setImageURI(mPhotoUri);
+//            Context context = this; // or AddEditWallabyActivity.this; - redundant way
+//            //Glide.with(context).load(mPhotoUri).into(mImageView);
+//            Glide.with(context).load(mCurrentPhotoPath).into(mImageView);
+//        } else {
+//            if (resultCode == RESULT_CANCELED) {
+//                // user cancelled the image capture
+//                //TODO delete file path from the DB
+//            }
+//        }
+//
+//    }
+//
+//
+//    public boolean checkCameraPermission() {
+//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA},
+//                    REQUEST_CAMERA_PERMISSION);
+//            return false;
+//        } else {
+//            return true;
+//        }
+//    }
+//
+//
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+//        // super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+//        Log.v("grantResults", Integer.toString(grantResults[0]));
+//        Log.v("requestCode", Integer.toString(requestCode));
+//        if (requestCode == REQUEST_CAMERA_PERMISSION) {
+//            if (grantResults.length <= 0) {
+//                Log.i(LOG_TAG, "User interaction was cancelled");
+//                mTakePictureButton.setEnabled(true);
+//            } else if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                Log.v("serendipity", Integer.toString(grantResults[0]));
+//                mTakePictureButton.setEnabled(true);
+//                Toast.makeText(getApplicationContext(), "Camera permission granted, click on 'Take Picture' button ", Toast.LENGTH_LONG).show();
+//            } else {
+//                mTakePictureButton.setEnabled(false);
+//                Toast.makeText(getApplicationContext(), "Camera permission not granted. Unable to take picture unless Permission given.", Toast.LENGTH_LONG).show();
+//            }
+//        }
+//    }
 
 
     private void showDeleteConfirmationDialogFrag() {

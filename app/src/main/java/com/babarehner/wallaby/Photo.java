@@ -6,9 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.media.ThumbnailUtils;
 import android.net.Uri;
+import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.Button;
@@ -27,12 +26,12 @@ import java.util.Date;
 
 import static android.app.Activity.RESULT_CANCELED;
 import static android.app.Activity.RESULT_OK;
-//import static com.babarehner.wallaby.AddEditWallabyActivity.REQUEST_IMAGE_CAPTURE;
+
 
 /**
  * Project Name: Wallaby
  * <p>
- * Copyright 10/4/19 by Mike Rehner
+ * Copyright 2/2/21 by Mike Rehner
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,59 +46,75 @@ import static android.app.Activity.RESULT_OK;
  * limitations under the License.
  */
 
-public class Camera extends Fragment {
 
-    static final String LOG_TAG = Camera.class.getSimpleName();
+public class Photo extends Fragment {
 
-    static final int REQUEST_IMAGE_CAPTURE = 100;
+    static final String LOG_TAG = Photo.class.getSimpleName();
 
-
+    static final int REQUEST_IMAGE_CAPTURE = 101;
+    public static final int REQUEST_CAMERA_PERMISSION = 99;
 
     private Button mTakePictureButton;
-    private boolean booleanValue;
 
     private Context context;
     private Activity activity;
 
     public String currentPhotoPath;
-
     private Uri mPhotoUri;
-    private ImageView imageView;
     private File photoFile;
-    private ImageView imageThmbNail;
+    private Bitmap mImageBitmap;
 
-    public Camera( Context context, Activity activity){
+    public Photo( Context context, Activity activity){
         this.context = context;
         this.activity = activity;
     }
 
-
-    public Button checkPermission(Button takePictureButton){
-        mTakePictureButton = takePictureButton;
-        checkCameraPermission();
-        return mTakePictureButton;
+    // return the photo absolute path
+    public String getCurrentPhotoPath(){
+        return currentPhotoPath;
     }
 
+    public String getFileName() { return photoFile.toString();}
 
-    public void checkCameraPermission() {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            // mTakePictureButton.setEnabled(false);
-            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.CAMERA},
-                    0);
+    public Bitmap getImageBitmap() {return mImageBitmap; }
+
+
+    /** Check if this device has a camera */
+    private boolean checkCameraHardware(Context context) {
+        if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)){
+            // this device has a camera
+            return true;
+        } else {
+            // no camera on this device
+            return false;
         }
     }
 
-    public Uri takePicture(ImageView v){
-        imageView = v;
+
+
+
+    private boolean checkCameraPermission() {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.CAMERA},
+                    REQUEST_CAMERA_PERMISSION);
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+
+    public Uri takePicture(){
         dispatchTakePictureIntent();
         return mPhotoUri;
     }
+
 
     // actally take the picture
     private void dispatchTakePictureIntent() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         // Ensure that there's a camera activity to handle the event
-        Log.v("starting dispatchTake ", LOG_TAG);
+        Log.d("starting dispatchTake ", LOG_TAG);
         if (takePictureIntent.resolveActivity(activity.getPackageManager()) != null) {
             // Create the filew where the photo should go
             photoFile = null;
@@ -125,14 +140,15 @@ public class Camera extends Fragment {
     }
 
 
-    // create a new file name
+    // create a new file name with a place to store teh file
     private File createImageFile() throws IOException {
         // Create an image file name
         currentPhotoPath="";
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
         // File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        //File storageDir = getExternalFilesDir("images");  // get the apps local directory
+        //File storageDir = getExternalFilesDir("images");
+        // get the apps local directory
         File storageDir = activity.getFilesDir();
         Log.v("Storage Directory ", storageDir.toString() );
         File imageFile = File.createTempFile(
@@ -146,13 +162,6 @@ public class Camera extends Fragment {
         Log.v("currentPhotoPath: ", currentPhotoPath);
         return imageFile;
     }
-
-    // return the photo absolute path
-    public String getCurrentPhotoPath(){
-        return currentPhotoPath;
-    }
-
-    public String getFileName() { return photoFile.toString();}
 
 
     // @Override
@@ -168,26 +177,19 @@ public class Camera extends Fragment {
     }
 
 
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         //super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK){
-            //TODO
-            imageView.setImageURI(mPhotoUri);
+            // imageView.setImageURI(mPhotoUri);
+            Bundle extras = data.getExtras();
+            mImageBitmap = (Bitmap) extras.get("data");
         } else {
             if (resultCode == RESULT_CANCELED){
                 // user cancelled the image capture
                 //TODO delete file path from the DB
             }
         }
-        //get the thumbnail image
-        //Bitmap thumbImage = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(currentPhotoPath), 50, 50);
-        //imageThmbNail.setImageBitmap(thumbImage);
-        //
     }
-
-
-
 
 }
