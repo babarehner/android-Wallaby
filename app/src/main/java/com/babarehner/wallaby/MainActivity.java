@@ -101,7 +101,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             Uri wallabyUri = WALLABY_URI;
 
             String[] projection = {_ID, WallabyContract.WallabyTableConstants.C_CARD_N,
-                WallabyContract.WallabyTableConstants.C_IMAGE_FN};
+                WallabyContract.WallabyTableConstants.C_IMAGE_FN,
+                    WallabyContract.WallabyTableConstants.C_THMB_NAIL};
 
             String selection = null;
             String[] selectionArgs = {};

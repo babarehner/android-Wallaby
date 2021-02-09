@@ -1,6 +1,7 @@
 package com.babarehner.wallaby;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -81,6 +82,13 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
     public static final int EXISTING_ADD_EDIT_WALLABY_LOADER = 0;
     public static final int THUMBSIZE = 100;
 
+    private static final int REQUEST_IMAGE_CAPTURE = 202;
+    private File mPhotoFile;
+    private Uri mPhotoUri;
+    final Intent mCaptureImage = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+    Context context;
+    Activity activity;
+
     private EditText mEditTextCard;
     private Button mTakePictureButton;
     private ImageView mImageView;
@@ -100,7 +108,7 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
     private String mCurrentPhotoPath;
     private EditText mEditTextPhotoPath;
 
-    private Uri mPhotoUri;
+
     private Uri mDBPhotoUri;
 
     private static final String PATH = "images/";
@@ -123,6 +131,7 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
             y,
             metaState
     );
+
 
 
 
@@ -170,6 +179,8 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
         // TODO When the button clicked remove old pics and then store new pics
         mTakePictureButton.setOnTouchListener(mTouchListener);
 
+
+
     }
 
 
@@ -198,8 +209,13 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
             // TODO get class variables to store bitmap in
             mImageViewFileName = fileName;
             Context context = AddEditWallabyActivity.this; // Redundant but makes clear how to get context of activity
-            Glide.with(context).load(fileName).into(mImageView);
+            // I suspect the line below with glide does not work with onLoadFinished!!
+            //Glide.with(context).load(fileName).into(mImageView);
+            Bitmap bitmapLarge = BitmapFactory.decodeFile(mImageViewFileName);
+            mImageView.setImageBitmap(bitmapLarge);
             //Glide.with(context).load(fileName).override(200,200).into(mImageThmbNail);
+            // Does these 2 lines immediately below show small immage when edit take picture
+            // button clicked
             Bitmap bitmapThumbNail = Utility.getBitmap(thumbNail);
             mImageThmbNail.setImageBitmap(bitmapThumbNail);
 
@@ -282,8 +298,8 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
     private void saveRecord() {
 
         String strCardName = mEditTextCard.getText().toString().trim();
-        String strFileName = mCurrentPhotoPath;
-        // String strFileName = mImageViewFileName;
+        // String strFileName = mCurrentPhotoPath;
+        String strFileName = mImageViewFileName;
         //mImageView.setDrawingCacheEnabled(true);
         // get the bitmap out of the mImageThmbnail
         Bitmap bmap = ((BitmapDrawable) mImageThmbNail.getDrawable()).getBitmap();
@@ -323,33 +339,170 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
 
 
 
-    // ButtonView calls this when clicked
-    public void takePicture(View v) {
-        // Remove the pictures from the edit page. This seems to work
-        if (mCurrentRecordUri != null){
-            // erases pictures
-            mImageView.setImageResource(android.R.color.transparent);
-            mImageThmbNail.setImageResource(android.R.color.transparent);
-            mImageView.invalidate();
-            mImageThmbNail.invalidate();
-            mPhotoUri = null;
-            mCurrentPhotoPath = "";
-            mImageViewFileName = "";
-            //Required to trigger update Fragment
-            //mageThmbNail.dispatchTouchEvent(motionEvent);
-            //mageView.dispatchTouchEvent(motionEvent);
-        }
-        Context context = AddEditWallabyActivity.this;
-        Photo myPhoto = new Photo(context, this);
-        mPhotoUri = myPhoto.takePicture();
-        mCurrentPhotoPath = myPhoto.getCurrentPhotoPath();
+    private void showDeleteConfirmationDialogFrag() {
+        DialogFragment df = new DialogFragDeleteConfirmation();
+        df.show(getSupportFragmentManager(), "Delete Record");
+        //deleteRecord();
+    }
 
-        Glide.with(context).load(mCurrentPhotoPath).override(200,200).into(mImageThmbNail);
-        Log.d(LOG_TAG, "1st camera load");
-        //mImageViewFileName = myPhoto.getFileName();
-        // Following 2 lines don't bring the image
-        // Get the thumbnail image
-        //Bitmap thumbImage = ThumbnailUtils.extractThumbnail(myPhoto.getImageBitmap(),THUMBSIZE,
+     public void onDeleteClick(){
+         //TODO Also need to delete jpg file stored in folder
+         //TODO This should be done before filename removed from DB
+        deleteRecord();
+    }
+
+    // delete Record from DB
+    public void deleteRecord(){
+        if (mCurrentRecordUri != null) {
+            int rowsDeleted = getContentResolver().delete(mCurrentRecordUri, null, null);
+            //TODO need to also delete the file that the filename in the db points to!!
+            if (rowsDeleted == 0) {
+                Toast.makeText(this, getString(R.string.delete_record_failure),
+                        Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, getString(R.string.delete_record_success),
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+        finish();
+    }
+
+
+    private void showUnsavedChangesDialogFrag() {
+        DialogFragment dfus = new DialogFragUnsavedChanges();
+        // update record
+        dfus.show(getSupportFragmentManager(), "Unsaved Changes Dialog Fragement");
+    }
+
+    public void onDiscardClick() {
+        //user click discard. Navigate up to parent activity
+        if (mHomeChecked){  // at Home Checkmark
+            NavUtils.navigateUpFromSameTask(AddEditWallabyActivity.this);
+        }
+        if (!mHomeChecked) { // at BackPressed
+            finish();
+        }
+    }
+
+    public void takePicture(View v) {
+        dispatchTakePictureIntent();
+        //Glide.with(context).load(mCurrentPhotoPath).override(200,200).into(mImageThmbNail);
+        //Glide.with(context).load(mCurrentPhotoPath).into(mImageView);
+    }
+
+//    private void dispatchPictureIntent() {
+//        Uri uri = FileProvider.getUriForFile(this.context,
+//                "com.babarehner.wallaby.fileprovider", mPhotoFile);
+//        mCaptureImage.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+//        LIst<ResolveInfo> cameraActivities =
+//    }
+
+    // actally take the picture
+    private void dispatchTakePictureIntent() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        PackageManager packageManager = this.getPackageManager();
+        boolean canTakePhoto = (mPhotoFile != null && takePictureIntent.resolveActivity(
+                packageManager) != null);
+        mTakePictureButton.setEnabled(canTakePhoto);
+        // Ensure that there's a camera activity to handle the event
+        Log.v("starting dispatchTake ", LOG_TAG);
+        if (takePictureIntent.resolveActivity(this.getPackageManager()) != null) {
+            // Create the filew where the photo should go
+            mPhotoFile = null;
+            // File photoFile = null;
+            try {
+                mPhotoFile = createImageFile();
+                Log.v("photoFile: ", mPhotoFile.toString());
+            } catch (IOException ex) {
+                // Error occurred while creating file
+                ex.printStackTrace();
+                Log.v("IO exception: :", LOG_TAG);
+            }
+            // Continue if the file was succesfully created
+            //mPhotoUri can be local
+            mPhotoUri = null;
+            mPhotoUri = FileProvider.getUriForFile( context,
+                    "com.babarehner.wallaby.fileprovider", mPhotoFile);
+            Log.v("Uri:", mPhotoUri.toString());
+            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, mPhotoUri);
+            // launch camera activity to take the photo
+            this.startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+        }
+    }
+
+
+    // create a new file name
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        mCurrentPhotoPath="";
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        // File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        //File storageDir = getExternalFilesDir("images");  // get the apps local directory
+        File storageDir = this.getFilesDir();
+        Log.v("Storage Directory ", storageDir.toString() );
+        File imageFile = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
+        // Save a file: path for use with ACTION_VIEW intents
+        mCurrentPhotoPath = imageFile.getAbsolutePath();
+        Log.v("currentPhotoPath: ", mCurrentPhotoPath);
+        return imageFile;
+    }
+
+
+    // onActivityResult called in Fragment Camera
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+            // mImageView.setImageURI(mPhotoUri);
+            Context context = this; // or AddEditWallabyActivity.this; - redundant way
+            Glide.with(context).load(mCurrentPhotoPath).into(mImageView);
+            Glide.with(context).load(mCurrentPhotoPath).override(200,200).into(mImageThmbNail);
+            mImageViewFileName = mCurrentPhotoPath;
+        } else {
+            if (resultCode == RESULT_CANCELED) {
+                // user cancelled the image capture
+                //TODO delete file path from the DB
+            }
+        }
+
+    }
+
+
+
+
+    // ButtonView calls this when clicked
+//    public void takePicture(View v) {
+//        // Remove the pictures from the edit page. This seems to work
+//        if (mCurrentRecordUri != null){
+//            // erases pictures
+//            mImageView.setImageResource(android.R.color.transparent);
+//            mImageThmbNail.setImageResource(android.R.color.transparent);
+//            mImageView.invalidate();
+//            mImageThmbNail.invalidate();
+//            mPhotoUri = null;
+//            mCurrentPhotoPath = "";
+//            mImageViewFileName = "";
+//            //Required to trigger update Fragment
+//            //mageThmbNail.dispatchTouchEvent(motionEvent);
+//            //mageView.dispatchTouchEvent(motionEvent);
+//        }
+//        Context context = AddEditWallabyActivity.this;
+//        Photo myPhoto = new Photo(context, this);
+//        mPhotoUri = myPhoto.takePicture();
+//        mCurrentPhotoPath = myPhoto.getCurrentPhotoPath();
+//
+//        Glide.with(context).load(mCurrentPhotoPath).override(200,200).into(mImageThmbNail);
+//        Log.d(LOG_TAG, "1st camera load");
+//        //mImageViewFileName = myPhoto.getFileName();
+//        // Following 2 lines don't bring the image
+//        // Get the thumbnail image
+//        //Bitmap thumbImage = ThumbnailUtils.extractThumbnail(myPhoto.getImageBitmap(),THUMBSIZE,
         //        THUMBSIZE);
 //        try {
 //            Bitmap thumbImage =
@@ -359,10 +512,10 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
 //        } catch (Exception e) {
 //            Log.e(LOG_TAG, "Unable to create bitmap image");
 //        }
-
-        Glide.with(context).load(mCurrentPhotoPath).into(mImageView);
-        Log.d(LOG_TAG, "2nd camera load");
-    }
+//
+//        Glide.with(context).load(mCurrentPhotoPath).into(mImageView);
+//        Log.d(LOG_TAG, "2nd camera load");
+//    }
 
 
 //    // onActivityResult called in Fragment Camera
@@ -414,55 +567,6 @@ public class AddEditWallabyActivity extends AppCompatActivity implements LoaderM
 //            }
 //        }
 //    }
-
-
-    private void showDeleteConfirmationDialogFrag() {
-        DialogFragment df = new DialogFragDeleteConfirmation();
-        df.show(getSupportFragmentManager(), "Delete Record");
-        //deleteRecord();
-    }
-
-     public void onDeleteClick(){
-         //TODO Also need to delete jpg file stored in folder
-         //TODO This should be done before filename removed from DB
-        deleteRecord();
-    }
-
-    // delete Record from DB
-    public void deleteRecord(){
-        if (mCurrentRecordUri != null) {
-            int rowsDeleted = getContentResolver().delete(mCurrentRecordUri, null, null);
-            //TODO need to also delete the file that the filename in the db points to!!
-            if (rowsDeleted == 0) {
-                Toast.makeText(this, getString(R.string.delete_record_failure),
-                        Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(this, getString(R.string.delete_record_success),
-                        Toast.LENGTH_SHORT).show();
-            }
-        }
-        finish();
-    }
-
-
-    private void showUnsavedChangesDialogFrag() {
-        DialogFragment dfus = new DialogFragUnsavedChanges();
-        // update record
-        dfus.show(getSupportFragmentManager(), "Unsaved Changes Dialog Fragement");
-    }
-
-    public void onDiscardClick() {
-        //user click discard. Navigate up to parent activity
-        if (mHomeChecked){  // at Home Checkmark
-            NavUtils.navigateUpFromSameTask(AddEditWallabyActivity.this);
-        }
-        if (!mHomeChecked) { // at BackPressed
-            finish();
-        }
-    }
-
-
-
 
 
 }

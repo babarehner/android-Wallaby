@@ -49,145 +49,145 @@ import static android.app.Activity.RESULT_OK;
 
 public class Camera extends Fragment {
 
-    static final String LOG_TAG = Camera.class.getSimpleName();
-
-    static final int REQUEST_IMAGE_CAPTURE = 100;
-
-
-
-    private Button mTakePictureButton;
-    private boolean booleanValue;
-
-    private Context context;
-    private Activity activity;
-
-    public String currentPhotoPath;
-
-    private Uri mPhotoUri;
-    private ImageView imageView;
-    private File photoFile;
-    private ImageView imageThmbNail;
-
-    public Camera( Context context, Activity activity){
-        this.context = context;
-        this.activity = activity;
-    }
-
-
-    public Button checkPermission(Button takePictureButton){
-        mTakePictureButton = takePictureButton;
-        checkCameraPermission();
-        return mTakePictureButton;
-    }
-
-
-    public void checkCameraPermission() {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            // mTakePictureButton.setEnabled(false);
-            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.CAMERA},
-                    0);
-        }
-    }
-
-    public Uri takePicture(ImageView v){
-        imageView = v;
-        dispatchTakePictureIntent();
-        return mPhotoUri;
-    }
-
-    // actally take the picture
-    private void dispatchTakePictureIntent() {
-        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        // Ensure that there's a camera activity to handle the event
-        Log.v("starting dispatchTake ", LOG_TAG);
-        if (takePictureIntent.resolveActivity(activity.getPackageManager()) != null) {
-            // Create the filew where the photo should go
-            photoFile = null;
-            // File photoFile = null;
-            try {
-                photoFile = createImageFile();
-                Log.v("photoFile: ", photoFile.toString());
-            } catch (IOException ex) {
-                // Error occurred while creating file
-                ex.printStackTrace();
-                Log.v("IO exception: :", LOG_TAG);
-            }
-            // Continue if the file was succesfully created
-            //mPhotoUri can be local
-            mPhotoUri = null;
-            mPhotoUri = FileProvider.getUriForFile( context,
-                    "com.babarehner.wallaby.fileprovider", photoFile);
-            Log.v("Uri:", mPhotoUri.toString());
-            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, mPhotoUri);
-            // launch camera activity to take the photo
-            activity.startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-        }
-    }
-
-
-    // create a new file name
-    private File createImageFile() throws IOException {
-        // Create an image file name
-        currentPhotoPath="";
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        // File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        //File storageDir = getExternalFilesDir("images");  // get the apps local directory
-        File storageDir = activity.getFilesDir();
-        Log.v("Storage Directory ", storageDir.toString() );
-        File imageFile = File.createTempFile(
-                imageFileName,  /* prefix */
-                ".jpg",         /* suffix */
-                storageDir      /* directory */
-        );
-
-        // Save a file: path for use with ACTION_VIEW intents
-        currentPhotoPath = imageFile.getAbsolutePath();
-        Log.v("currentPhotoPath: ", currentPhotoPath);
-        return imageFile;
-    }
-
-    // return the photo absolute path
-    public String getCurrentPhotoPath(){
-        return currentPhotoPath;
-    }
-
-    public String getFileName() { return photoFile.toString();}
-
-
-    // @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        // super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == 0) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                mTakePictureButton.setEnabled(true);
-            } else {
-                Toast.makeText(context, "Camera permission not granted. Unable to take Picture.", Toast.LENGTH_LONG).show();
-            }
-        }
-    }
-
-
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        //super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK){
-            //TODO
-            imageView.setImageURI(mPhotoUri);
-        } else {
-            if (resultCode == RESULT_CANCELED){
-                // user cancelled the image capture
-                //TODO delete file path from the DB
-            }
-        }
-        //get the thumbnail image
-        //Bitmap thumbImage = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(currentPhotoPath), 50, 50);
-        //imageThmbNail.setImageBitmap(thumbImage);
-        //
-    }
-
-
+//    static final String LOG_TAG = Camera.class.getSimpleName();
+//
+//    //static final int REQUEST_IMAGE_CAPTURE = 100;
+//
+//
+//
+//    private Button mTakePictureButton;
+//    private boolean booleanValue;
+//
+//    private Context context;
+//    private Activity activity;
+//
+//    public String currentPhotoPath;
+//
+//    private Uri mPhotoUri;
+//    private ImageView imageView;
+//    private File photoFile;
+//    private ImageView imageThmbNail;
+//
+//    public Camera( Context context, Activity activity){
+//        this.context = context;
+//        this.activity = activity;
+//    }
+//
+//
+//    public Button checkPermission(Button takePictureButton){
+//        mTakePictureButton = takePictureButton;
+//        checkCameraPermission();
+//        return mTakePictureButton;
+//    }
+//
+//
+//    public void checkCameraPermission() {
+//        if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+//            // mTakePictureButton.setEnabled(false);
+//            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.CAMERA},
+//                    0);
+//        }
+//    }
+//
+//    public Uri takePicture(ImageView v){
+//        imageView = v;
+//        dispatchTakePictureIntent();
+//        return mPhotoUri;
+//    }
+//
+//    // actally take the picture
+//    private void dispatchTakePictureIntent() {
+//        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+//        // Ensure that there's a camera activity to handle the event
+//        Log.v("starting dispatchTake ", LOG_TAG);
+//        if (takePictureIntent.resolveActivity(activity.getPackageManager()) != null) {
+//            // Create the filew where the photo should go
+//            photoFile = null;
+//            // File photoFile = null;
+//            try {
+//                photoFile = createImageFile();
+//                Log.v("photoFile: ", photoFile.toString());
+//            } catch (IOException ex) {
+//                // Error occurred while creating file
+//                ex.printStackTrace();
+//                Log.v("IO exception: :", LOG_TAG);
+//            }
+//            // Continue if the file was succesfully created
+//            //mPhotoUri can be local
+//            mPhotoUri = null;
+//            mPhotoUri = FileProvider.getUriForFile( context,
+//                    "com.babarehner.wallaby.fileprovider", photoFile);
+//            Log.v("Uri:", mPhotoUri.toString());
+//            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, mPhotoUri);
+//            // launch camera activity to take the photo
+//            activity.startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+//        }
+//    }
+//
+//
+//    // create a new file name
+//    private File createImageFile() throws IOException {
+//        // Create an image file name
+//        currentPhotoPath="";
+//        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+//        String imageFileName = "JPEG_" + timeStamp + "_";
+//        // File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+//        //File storageDir = getExternalFilesDir("images");  // get the apps local directory
+//        File storageDir = activity.getFilesDir();
+//        Log.v("Storage Directory ", storageDir.toString() );
+//        File imageFile = File.createTempFile(
+//                imageFileName,  /* prefix */
+//                ".jpg",         /* suffix */
+//                storageDir      /* directory */
+//        );
+//
+//        // Save a file: path for use with ACTION_VIEW intents
+//        currentPhotoPath = imageFile.getAbsolutePath();
+//        Log.v("currentPhotoPath: ", currentPhotoPath);
+//        return imageFile;
+//    }
+//
+//    // return the photo absolute path
+//    public String getCurrentPhotoPath(){
+//        return currentPhotoPath;
+//    }
+//
+//    public String getFileName() { return photoFile.toString();}
+//
+//
+//    // @Override
+//    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+//        // super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+//        if (requestCode == 0) {
+//            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                mTakePictureButton.setEnabled(true);
+//            } else {
+//                Toast.makeText(context, "Camera permission not granted. Unable to take Picture.", Toast.LENGTH_LONG).show();
+//            }
+//        }
+//    }
+//
+//
+//
+//    @Override
+//    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        //super.onActivityResult(requestCode, resultCode, data);
+//        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK){
+//            //TODO
+//            imageView.setImageURI(mPhotoUri);
+//        } else {
+//            if (resultCode == RESULT_CANCELED){
+//                // user cancelled the image capture
+//                //TODO delete file path from the DB
+//            }
+//        }
+//        //get the thumbnail image
+//        //Bitmap thumbImage = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(currentPhotoPath), 50, 50);
+//        //imageThmbNail.setImageBitmap(thumbImage);
+//        //
+//    }
+//
+//
 
 
 }
